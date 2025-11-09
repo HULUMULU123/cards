@@ -1,0 +1,19 @@
+const theme = {
+  colors: {
+    background: '#1c0035',
+    backgroundSecondary: '#2b0052',
+    accent: '#a950ff',
+    accentSecondary: '#f3c93f',
+    textPrimary: '#ffffff',
+    textSecondary: '#d5b8ff',
+    surface: 'rgba(255, 255, 255, 0.08)',
+  },
+  radii: {
+    xl: '32px',
+    lg: '24px',
+    md: '16px',
+    sm: '12px',
+  },
+}
+
+export default theme

@@ -1,0 +1,10 @@
+django>=4.2,<5.0
+djangorestframework>=3.14
+psycopg2-binary>=2.9; sys_platform != 'win32'
+pyjwt>=2.8
+cryptography>=41
+pillow>=10
+python-dotenv>=1.0
+corsheaders>=3.14
+djangorestframework-simplejwt>=5.3
+jazzmin>=2.6
