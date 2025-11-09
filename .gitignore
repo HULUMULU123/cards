@@ -1,0 +1,63 @@
+# ======================
+# Global
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.sqlite3
+*.db
+*.log
+*.pot
+*.mo
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+*.rej
+*.idea/
+*.vscode/
+*.DS_Store
+.env
+.env.*
+venv/
+.venv/
+.env.local
+*.coverage
+coverage/
+htmlcov/
+
+# ======================
+# Django backend
+# ======================
+/backend/venv/
+/backend/media/
+/backend/staticfiles/
+/backend/static_root/
+/backend/__pycache__/
+/backend/db.sqlite3
+/backend/.pytest_cache/
+/backend/*.log
+/backend/*.pyc
+/backend/*.pyo
+/backend/*.pyd
+/backend/migrations/__pycache__/
+
+# ======================
+# React frontend
+# ======================
+/frontend/node_modules/
+/frontend/build/
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.eslintcache
+/frontend/.parcel-cache
+/frontend/dist/
+/frontend/coverage/
