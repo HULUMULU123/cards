@@ -42,28 +42,37 @@ const useAuthStore = create((set, get) => ({
   withdrawHistory: [],
   loading: false,
   error: null,
+  appReady: false,
 
   setToken: (token) => set({ token }),
 
   initialize: async () => {
-    const { token } = get()
-    if (token) {
+    const { token, appReady } = get()
+    if (appReady) {
       return
     }
-    const telegram = window.Telegram?.WebApp
-    if (telegram?.initData) {
-      try {
-        const response = await apiClient.post('/auth/telegram/', { init_data: telegram.initData })
-        set({ token: response.access, profile: response.profile })
-        telegram.ready()
+    try {
+      if (token) {
         await get().refreshAll()
         return
-      } catch (error) {
-        console.warn('Failed to authorize via Telegram', error)
       }
+      const telegram = window.Telegram?.WebApp
+      if (telegram?.initData) {
+        try {
+          const response = await apiClient.post('/auth/telegram/', { init_data: telegram.initData })
+          set({ token: response.access, profile: response.profile })
+          telegram.ready()
+          await get().refreshAll()
+          return
+        } catch (error) {
+          console.warn('Failed to authorize via Telegram', error)
+        }
+      }
+      // fallback demo data for local development without Telegram
+      set({ token: null, profile: fallbackUser, collection: fallbackCards, withdrawHistory: fallbackHistory })
+    } finally {
+      set({ appReady: true })
     }
-    // fallback demo data for local development without Telegram
-    set({ token: null, profile: fallbackUser, collection: fallbackCards, withdrawHistory: fallbackHistory })
   },
 
   refreshAll: async () => {
