@@ -12,7 +12,7 @@ const fallbackUser = {
   stars_balance: 417,
   stars_withdrawable: 300,
   referrals_count: 38,
-  cards_opened: 417,
+  cards_opened: 70,
   cards_total: 12,
 }
 

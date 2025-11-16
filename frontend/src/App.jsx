@@ -9,14 +9,47 @@ import WithdrawScreen from './screens/WithdrawScreen'
 import useAuthStore from './store/useAuthStore'
 
 const AppShell = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   padding: 16px;
-  background: radial-gradient(120% 120% at 50% 0%, #640ecb 0%, #200035 100%);
+  background: #0b0117;
+  overflow: hidden;
+
+  /* Фиолетовые круги */
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(120, 0, 255, 0.55) 0%,
+      rgba(120, 0, 255, 0.18) 55%,
+      rgba(120, 0, 255, 0.0) 70%
+    );
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* правый верхний */
+  &::before {
+    top: -140px;
+    right: -140px;
+  }
+  /* левый нижний */
+  &::after {
+    bottom: -140px;
+    left: -140px;
+  }
 `
 
 const Content = styled.main`
+  position: relative;
+  z-index: 1;            /* поверх фона */
   flex: 1;
   display: flex;
   flex-direction: column;
