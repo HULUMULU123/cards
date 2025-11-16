@@ -2,24 +2,33 @@ import styled from 'styled-components'
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
   width: 100%;
 `
 
-const CardItem = styled.div`
+const CardSlot = styled.div`
   position: relative;
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
-  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.25));
+  background: ${(props) =>
+    props.$placeholder
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'
+      : 'radial-gradient(circle at top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.25))'};
+  aspect-ratio: 3 / 5;
   min-height: 180px;
   display: flex;
   align-items: flex-end;
+  justify-content: flex-start;
   padding: 16px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  box-shadow: ${(props) =>
+    props.$placeholder
+      ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.06)'
+      : 'inset 0 0 0 1px rgba(255, 255, 255, 0.08)'};
+  text-shadow: ${(props) => (props.$placeholder ? 'none' : '0 4px 14px rgba(0, 0, 0, 0.45)')};
   background-size: cover;
   background-position: center;
+  opacity: ${(props) => (props.$placeholder ? 0.35 : 1)};
 `
 
 const Quantity = styled.div`
@@ -40,17 +49,25 @@ const Title = styled.span`
 `
 
 export default function CardGrid({ cards }) {
+  const columns = 3
+  const remainder = cards.length % columns
+  const placeholders = remainder === 0 ? 0 : columns - remainder
+  const slots = [...cards, ...Array(placeholders).fill(null)]
+
   return (
     <Grid>
-      {cards.map((card) => {
+      {slots.map((card, index) => {
+        if (!card) {
+          return <CardSlot key={`placeholder-${index}`} $placeholder />
+        }
         const style = card.image_url
           ? { backgroundImage: `linear-gradient(120deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(${card.image_url})` }
           : undefined
         return (
-          <CardItem key={card.id || `${card.title}-${card.rarity}`} style={style}>
+          <CardSlot key={card.id || `${card.title}-${card.rarity}`} style={style}>
             <Quantity>{card.quantity}×</Quantity>
             <Title>{card.title}</Title>
-          </CardItem>
+          </CardSlot>
         )
       })}
     </Grid>

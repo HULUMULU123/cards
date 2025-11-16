@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import styled from 'styled-components'
 
 import TabBar from './components/TabBar'
+import LoadingScreen from './components/LoadingScreen'
 import CollectionScreen from './screens/CollectionScreen'
 import ProfileScreen from './screens/ProfileScreen'
 import WithdrawScreen from './screens/WithdrawScreen'
@@ -60,10 +61,15 @@ const Content = styled.main`
 export default function App() {
   const location = useLocation()
   const initialize = useAuthStore((state) => state.initialize)
+  const appReady = useAuthStore((state) => state.appReady)
 
   useEffect(() => {
     initialize()
   }, [initialize])
+
+  if (!appReady) {
+    return <LoadingScreen />
+  }
 
   return (
     <AppShell>
