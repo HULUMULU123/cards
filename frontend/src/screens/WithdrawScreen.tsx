@@ -294,9 +294,9 @@ export default function WithdrawScreen() {
         )}
       </History>
 
-      <StarsButton type="button" onClick={handleBuyStars}>
+      {/* <StarsButton type="button" onClick={handleBuyStars}>
         Купить звёзды через Telegram
-      </StarsButton>
+      </StarsButton> */}
     </Screen>
   )
 }

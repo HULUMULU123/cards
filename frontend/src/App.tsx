@@ -9,6 +9,9 @@ import ProfileScreen from './screens/ProfileScreen'
 import WithdrawScreen from './screens/WithdrawScreen'
 import useAuthStore from './store/useAuthStore'
 
+
+import { GlobalStyles } from './styles/globalStyles';
+
 const AppShell = styled.div`
   position: relative;
   display: flex;
@@ -17,6 +20,8 @@ const AppShell = styled.div`
   padding: 16px;
   background: #0b0117;
   overflow: hidden;
+ 
+
 
   /* Фиолетовые круги */
   &::before,
@@ -72,6 +77,8 @@ export default function App() {
   }
 
   return (
+    <>
+    <GlobalStyles />
     <AppShell>
       <Content>
         <Routes location={location}>
@@ -83,5 +90,7 @@ export default function App() {
       </Content>
       <TabBar />
     </AppShell>
+    </>
+    
   )
 }
