@@ -28,7 +28,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <HashRouter>
@@ -36,5 +36,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <App />
       </HashRouter>
     </ThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 )

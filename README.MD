@@ -4,7 +4,7 @@
 
 ## Стек
 
-- **Frontend:** React + Vite, styled-components, Zustand, React Router DOM
+- **Frontend:** React + Vite (TypeScript), styled-components, Zustand, React Router DOM
 - **Backend:** Django, Django REST Framework, Simple JWT, Jazzmin, CORS Headers
 - **Telegram:** интеграция WebApp, авторизация initData, демо-подключение звёзд
 

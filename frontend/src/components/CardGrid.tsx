@@ -1,5 +1,7 @@
 import styled from 'styled-components'
 
+import { Card } from '../types/entities'
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7,7 +9,7 @@ const Grid = styled.div`
   width: 100%;
 `
 
-const CardSlot = styled.div`
+const CardSlot = styled.div<{ $placeholder?: boolean }>`
   position: relative;
   border-radius: 24px;
   overflow: hidden;
@@ -48,11 +50,15 @@ const Title = styled.span`
   letter-spacing: 0.5px;
 `
 
-export default function CardGrid({ cards }) {
+interface CardGridProps {
+  cards: Card[]
+}
+
+export default function CardGrid({ cards }: CardGridProps) {
   const columns = 3
   const remainder = cards.length % columns
   const placeholders = remainder === 0 ? 0 : columns - remainder
-  const slots = [...cards, ...Array(placeholders).fill(null)]
+  const slots: (Card | null)[] = [...cards, ...Array(placeholders).fill(null)]
 
   return (
     <Grid>
