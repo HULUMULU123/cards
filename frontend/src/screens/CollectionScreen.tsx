@@ -46,7 +46,7 @@ export default function CollectionScreen() {
   const fetchCollection = useAuthStore((state) => state.fetchCollection)
 
   useEffect(() => {
-    fetchCollection()
+    void fetchCollection()
   }, [fetchCollection])
 
   return (

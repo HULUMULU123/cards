@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
+
 import useAuthStore from '../store/useAuthStore'
 
 const Screen = styled.section`
@@ -10,7 +11,7 @@ const Screen = styled.section`
   text-align: center;
 `
 
-const Card = styled.div`
+const Card = styled.div<{ $group?: string }>`
   width: 100%;
   max-width: 480px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(86, 0, 212, 0.45));
@@ -48,7 +49,6 @@ const Username = styled.div`
 `
 
 const ReferralBlock = styled.div`
-  
   width: 100%;
   padding: 20px;
   text-align: left;
@@ -70,7 +70,7 @@ const ReferralLink = styled.div`
 `
 
 const CopyButton = styled.button`
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border: none;
   width: 50px;
@@ -111,7 +111,6 @@ const BalanceBlock = styled.div`
   display: flex;
 `
 
-// ==== Прогресс бар ====
 const ProgressWrapper = styled.div`
   width: 80%;
   height: 6px;
@@ -121,15 +120,13 @@ const ProgressWrapper = styled.div`
   overflow: hidden;
 `
 
-const ProgressFill = styled.div`
+const ProgressFill = styled.div<{ $percent: number }>`
   height: 100%;
   background: linear-gradient(90deg, #ffdb4d, #ff8a00);
   width: ${(props) => props.$percent}%;
   transition: width 0.4s ease;
   border-radius: 8px;
 `
-
-// =======================
 
 export default function ProfileScreen() {
   const profile = useAuthStore((state) => state.profile)
@@ -142,10 +139,9 @@ export default function ProfileScreen() {
 
   const handleCopy = () => {
     if (!profile?.referral_link) return
-    navigator.clipboard.writeText(profile.referral_link)
+    void navigator.clipboard.writeText(profile.referral_link)
   }
 
-  // данные для прогресс-бара
   const opened = profile?.cards_opened ?? 0
   const total = 417
   const percent = Math.min(100, Math.round((opened / total) * 100))
@@ -179,8 +175,6 @@ export default function ProfileScreen() {
           <ProgressWrapper>
             <ProgressFill $percent={percent} />
           </ProgressWrapper>
-
-          
         </Card>
 
         <Card $group="c">
@@ -199,20 +193,19 @@ export default function ProfileScreen() {
           </span>
         </Card>
       </ProfileGrid>
-      
+
       <BalanceBlock>
-        <p style={{margin: 'auto', fontSize: '25px'}}>Можно вывести - 300  ⭐</p>
+        <p style={{ margin: 'auto', fontSize: '25px' }}>Можно вывести - 300  ⭐</p>
       </BalanceBlock>
 
       <Card>
         <ReferralBlock>
-          <div style={{display: "flex"}}>
-          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '300' }}>REFERRAL LINK</h3>
-          <CopyButton onClick={handleCopy}>COPY</CopyButton>
+          <div style={{ display: 'flex' }}>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '300' }}>REFERRAL LINK</h3>
+            <CopyButton onClick={handleCopy}>COPY</CopyButton>
           </div>
           <ReferralLink>
             <span>{profile?.referral_link || 'https://t.me/example?start=ref'}</span>
-            
           </ReferralLink>
         </ReferralBlock>
       </Card>

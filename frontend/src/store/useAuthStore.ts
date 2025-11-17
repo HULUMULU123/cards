@@ -1,8 +1,18 @@
 import { create } from 'zustand'
 
 import apiClient from '../api/client'
+import {
+  Card,
+  CollectionResponse,
+  InvoiceResponse,
+  TelegramAuthResponse,
+  UserProfile,
+  WithdrawHistoryItem,
+  WithdrawHistoryResponse,
+  WithdrawRequest,
+} from '../types/entities'
 
-const fallbackUser = {
+const fallbackUser: UserProfile = {
   user: {
     username: 'tg_demo',
     first_name: 'Demo',
@@ -16,7 +26,7 @@ const fallbackUser = {
   cards_total: 12,
 }
 
-const fallbackCards = [
+const fallbackCards: Card[] = [
   {
     id: 'demo-1',
     title: 'Ice Watch',
@@ -33,9 +43,30 @@ const fallbackCards = [
   },
 ]
 
-const fallbackHistory = []
+const fallbackHistory: WithdrawHistoryItem[] = []
 
-const useAuthStore = create((set, get) => ({
+interface AuthState {
+  token: string | null
+  profile: UserProfile | null
+  collection: Card[]
+  withdrawHistory: WithdrawHistoryItem[]
+  loading: boolean
+  error: string | null
+  appReady: boolean
+}
+
+interface AuthActions {
+  setToken: (token: string | null) => void
+  initialize: () => Promise<void>
+  refreshAll: () => Promise<void>
+  fetchProfile: () => Promise<void>
+  fetchCollection: () => Promise<void>
+  fetchWithdrawHistory: () => Promise<void>
+  submitWithdraw: (payload: WithdrawRequest) => Promise<WithdrawHistoryItem>
+  openStarsInvoice: (amount: number) => Promise<InvoiceResponse>
+}
+
+const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   token: null,
   profile: null,
   collection: [],
@@ -59,7 +90,7 @@ const useAuthStore = create((set, get) => ({
       const telegram = window.Telegram?.WebApp
       if (telegram?.initData) {
         try {
-          const response = await apiClient.post('/auth/telegram/', { init_data: telegram.initData })
+          const response = await apiClient.post<TelegramAuthResponse>('/auth/telegram/', { init_data: telegram.initData })
           set({ token: response.access, profile: response.profile })
           telegram.ready()
           await get().refreshAll()
@@ -87,7 +118,7 @@ const useAuthStore = create((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get('/profile/', token)
+      const data = await apiClient.get<UserProfile>('/profile/', token)
       if (data) {
         set({ profile: data })
       }
@@ -100,7 +131,7 @@ const useAuthStore = create((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get('/collection/', token)
+      const data = await apiClient.get<CollectionResponse>('/collection/', token)
       if (data?.cards) {
         set({ collection: data.cards })
       }
@@ -113,7 +144,7 @@ const useAuthStore = create((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get('/withdraw/', token)
+      const data = await apiClient.get<WithdrawHistoryResponse>('/withdraw/', token)
       if (data?.history) {
         set({ withdrawHistory: data.history })
       }
@@ -129,7 +160,7 @@ const useAuthStore = create((set, get) => ({
       if (!token) {
         throw new Error('Авторизуйтесь в Telegram для вывода')
       }
-      const data = await apiClient.post('/withdraw/', payload, token)
+      const data = await apiClient.post<WithdrawHistoryItem>('/withdraw/', payload, token)
       set((state) => ({
         withdrawHistory: [data, ...state.withdrawHistory],
         loading: false,
@@ -137,7 +168,8 @@ const useAuthStore = create((set, get) => ({
       await get().fetchProfile()
       return data
     } catch (error) {
-      set({ error: error.message, loading: false })
+      const message = error instanceof Error ? error.message : 'Не удалось выполнить вывод'
+      set({ error: message, loading: false })
       throw error
     }
   },
@@ -151,11 +183,11 @@ const useAuthStore = create((set, get) => ({
     if (!token) {
       throw new Error('Авторизуйтесь в Telegram для покупки звёзд')
     }
-    const invoice = await apiClient.post('/stars/invoice/', { stars_amount: amount }, token)
+    const invoice = await apiClient.post<InvoiceResponse>('/stars/invoice/', { stars_amount: amount }, token)
     if (telegram.openInvoice) {
       telegram.openInvoice(invoice.payload, (status) => {
         if (status === 'paid') {
-          get().fetchProfile()
+          void get().fetchProfile()
         }
       })
     }

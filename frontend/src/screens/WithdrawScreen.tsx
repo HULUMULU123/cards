@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import styled from "styled-components";
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
-import useAuthStore from "../store/useAuthStore";
+import useAuthStore from '../store/useAuthStore'
 
 const Screen = styled.section`
   display: flex;
@@ -55,7 +55,6 @@ const Form = styled.form`
 `;
 
 const InputGroup = styled.div`
-  /* background: rgba(255, 255, 255, 0.12); */
   border-radius: 18px;
   padding: 16px;
   display: flex;
@@ -164,60 +163,55 @@ const StarsButton = styled.button`
 `;
 
 export default function WithdrawScreen() {
-  const profile = useAuthStore((state) => state.profile);
-  const loading = useAuthStore((state) => state.loading);
-  const error = useAuthStore((state) => state.error);
-  const submitWithdraw = useAuthStore((state) => state.submitWithdraw);
-  const openStarsInvoice = useAuthStore((state) => state.openStarsInvoice);
-  const withdrawHistory = useAuthStore((state) => state.withdrawHistory);
-  const fetchWithdrawHistory = useAuthStore(
-    (state) => state.fetchWithdrawHistory
-  );
+  const profile = useAuthStore((state) => state.profile)
+  const loading = useAuthStore((state) => state.loading)
+  const error = useAuthStore((state) => state.error)
+  const submitWithdraw = useAuthStore((state) => state.submitWithdraw)
+  const openStarsInvoice = useAuthStore((state) => state.openStarsInvoice)
+  const withdrawHistory = useAuthStore((state) => state.withdrawHistory)
+  const fetchWithdrawHistory = useAuthStore((state) => state.fetchWithdrawHistory)
 
-  const [amount, setAmount] = useState("");
-  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState('')
+  const [recipient, setRecipient] = useState('')
 
-  const balanceText = useMemo(
-    () => profile?.stars_withdrawable ?? 0,
-    [profile]
-  );
+  const balanceText = useMemo(() => profile?.stars_withdrawable ?? 0, [profile])
 
   useEffect(() => {
-    fetchWithdrawHistory();
-  }, [fetchWithdrawHistory]);
+    void fetchWithdrawHistory()
+  }, [fetchWithdrawHistory])
 
-  const handleQuickSelect = (value) => {
-    if (value === "all") {
-      setAmount(String(balanceText));
+  const handleQuickSelect = (value: number | 'all') => {
+    if (value === 'all') {
+      setAmount(String(balanceText))
     } else {
-      setAmount(String((Number(amount) || 0) + value));
+      setAmount(String((Number(amount) || 0) + value))
     }
-  };
+  }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     if (!amount || Number(amount) <= 0) {
-      return;
+      return
     }
     try {
       await submitWithdraw({
         stars_amount: Number(amount),
-        recipient_username: recipient.replace("@", ""),
-      });
-      setAmount("");
-      setRecipient("");
+        recipient_username: recipient.replace('@', ''),
+      })
+      setAmount('')
+      setRecipient('')
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
   const handleBuyStars = async () => {
     try {
-      await openStarsInvoice(100);
+      await openStarsInvoice(100)
     } catch (err) {
-      console.error("Не удалось открыть платёж", err);
+      console.error('Не удалось открыть платёж', err)
     }
-  };
+  }
 
   return (
     <Screen>
@@ -228,17 +222,17 @@ export default function WithdrawScreen() {
             {balanceText}
             <span
               style={{
-                fontSize: "20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                alignSelf: "center",
+                fontSize: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                alignSelf: 'center',
               }}
             >
               ⭐
             </span>
           </Balance>
-          <span style={{ color: "#b1a1be", fontWeight: "500" }}>
+          <span style={{ color: '#b1a1be', fontWeight: '500' }}>
             доступно к выводу
           </span>
         </Card>
@@ -263,10 +257,7 @@ export default function WithdrawScreen() {
                   +{value}
                 </QuickButton>
               ))}
-              <QuickButton
-                type="button"
-                onClick={() => handleQuickSelect("all")}
-              >
+              <QuickButton type="button" onClick={() => handleQuickSelect('all')}>
                 Всё
               </QuickButton>
             </QuickButtons>
@@ -285,7 +276,7 @@ export default function WithdrawScreen() {
           {error && <ErrorText>{error}</ErrorText>}
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? "Отправка…" : "Вывести"}
+            {loading ? 'Отправка…' : 'Вывести'}
           </SubmitButton>
         </Form>
       </>
@@ -299,9 +290,13 @@ export default function WithdrawScreen() {
           </HistoryItem>
         ))}
         {withdrawHistory.length === 0 && (
-          <span style={{ color: "#b79cff" }}>История пока пуста</span>
+          <span style={{ color: '#b79cff' }}>История пока пуста</span>
         )}
       </History>
+
+      <StarsButton type="button" onClick={handleBuyStars}>
+        Купить звёзды через Telegram
+      </StarsButton>
     </Screen>
-  );
+  )
 }

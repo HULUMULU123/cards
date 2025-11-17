@@ -50,7 +50,7 @@ const AppShell = styled.div`
 
 const Content = styled.main`
   position: relative;
-  z-index: 1;            /* поверх фона */
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -64,7 +64,7 @@ export default function App() {
   const appReady = useAuthStore((state) => state.appReady)
 
   useEffect(() => {
-    initialize()
+    void initialize()
   }, [initialize])
 
   if (!appReady) {
