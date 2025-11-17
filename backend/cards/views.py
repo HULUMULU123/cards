@@ -99,7 +99,7 @@ class ProfileView(APIView):
 class CollectionView(APIView):
     def get(self, request, *args, **kwargs):
         cards = Card.objects.filter(user=request.user).order_by('title')
-        serializer = CardSerializer(cards, many=True)
+        serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response({'cards': serializer.data})
 
 

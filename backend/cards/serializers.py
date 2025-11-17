@@ -32,9 +32,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class CardSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Card
         fields = ('id', 'title', 'rarity', 'quantity', 'image_url')
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get('request')
+        url = obj.image.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class WithdrawRequestSerializer(serializers.ModelSerializer):

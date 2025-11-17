@@ -23,12 +23,10 @@ def create_user_profile(sender, instance, created, **kwargs):
             title='Ice Watch',
             rarity='epic',
             quantity=3,
-            image_url='https://placehold.co/200x300/6633cc/FFFFFF/png?text=Ice+Watch',
         )
         Card.objects.create(
             user=instance,
             title='City Lights',
             rarity='rare',
             quantity=7,
-            image_url='https://placehold.co/200x300/441199/FFFFFF/png?text=City+Lights',
         )
