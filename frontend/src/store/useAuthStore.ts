@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import apiClient from '../api/client'
+import fallbackCardImage from '../assets/img/card.png'
 import {
   Card,
   CollectionResponse,
@@ -29,17 +30,10 @@ const fallbackUser: UserProfile = {
 const fallbackCards: Card[] = [
   {
     id: 'demo-1',
-    title: 'Ice Watch',
+    title: 'Демо-карточка',
     rarity: 'epic',
-    quantity: 7,
-    image_url: 'https://placehold.co/200x300/8833ff/ffffff?text=Ice+Watch',
-  },
-  {
-    id: 'demo-2',
-    title: 'City Lights',
-    rarity: 'rare',
-    quantity: 3,
-    image_url: 'https://placehold.co/200x300/441199/ffffff?text=City+Lights',
+    quantity: 1,
+    image_url: fallbackCardImage,
   },
 ]
 

@@ -85,6 +85,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -116,8 +118,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 JAZZMIN_SETTINGS = {
-    'site_title': 'Cards Admin',
-    'site_header': 'Cards Admin',
+    'site_title': 'Админка карточек',
+    'site_header': 'Карточки',
+    'site_brand': 'Панель управления',
     'welcome_sign': 'Добро пожаловать в панель управления карточками',
 }
 
