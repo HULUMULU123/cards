@@ -13,34 +13,35 @@ const CardSlot = styled.div<{ $placeholder?: boolean }>`
   position: relative;
   border-radius: 24px;
   overflow: hidden;
-  background: ${(props) =>
-    props.$placeholder
-      ? 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'
-      : 'radial-gradient(circle at top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.25))'};
   aspect-ratio: 3 / 5;
   min-height: 180px;
+
+  /* убираем padding, чтобы ничего не сдвигало картинку */
+  padding: 0;
+
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  padding: 16px;
+
   box-shadow: ${(props) =>
     props.$placeholder
       ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.06)'
       : 'inset 0 0 0 1px rgba(255, 255, 255, 0.08)'};
-  text-shadow: ${(props) => (props.$placeholder ? 'none' : '0 4px 14px rgba(0, 0, 0, 0.45)')};
-  background-size: cover;
-  background-position: center;
+
+  background: ${(props) =>
+    props.$placeholder
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'
+      : 'none'};
   opacity: ${(props) => (props.$placeholder ? 0.35 : 1)};
 `
-
 const Quantity = styled.div`
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 7px;
+  right: 7px;
   background: linear-gradient(135deg, #ffdb4d, #ff8a00);
   color: #32043e;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 3px 5px;
   font-weight: 700;
   font-size: 13px;
 `
@@ -49,6 +50,16 @@ const Title = styled.span`
   font-weight: 700;
   letter-spacing: 0.5px;
 `
+
+const BGImage = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;     /* ключевой момент — растягивает без искажений */
+  object-position: center;
+`
+
 
 interface CardGridProps {
   cards: Card[]
@@ -70,9 +81,10 @@ export default function CardGrid({ cards }: CardGridProps) {
           ? { backgroundImage: `linear-gradient(120deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(${card.image_url})` }
           : undefined
         return (
-          <CardSlot key={card.id || `${card.title}-${card.rarity}`} style={style}>
+          <CardSlot key={card.id}>
+            <BGImage src={card.image_url} alt="" />
+
             <Quantity>{card.quantity}×</Quantity>
-            <Title>{card.title}</Title>
           </CardSlot>
         )
       })}

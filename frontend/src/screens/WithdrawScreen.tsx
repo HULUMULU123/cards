@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 import useAuthStore from '../store/useAuthStore'
 
+import star from '../assets/icons/star.svg'
 const Screen = styled.section`
   display: flex;
   flex-direction: column;
@@ -83,6 +84,28 @@ const Input = styled.input`
   font-size: 16px;
 `;
 
+const CountInput = styled.input`
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+`;
+
+const InputDiv = styled.div`
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  background: #150320;
+  background: linear-gradient(
+    68deg,
+    rgba(21, 3, 32, 1) 57%,
+    rgba(88, 36, 117, 0.3) 100%
+  );
+  border: 1px solid #3a3342;
+
+  border-radius: 12px;
+  padding: 18px 16px;`
+
 const QuickButtons = styled.div`
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -113,7 +136,7 @@ const QuickButton = styled.button`
 const SubmitButton = styled.button`
   margin: auto;
   width: 50%;
-  background: linear-gradient(135deg, #fcdf32, #f3be00);
+  background: linear-gradient(90deg, #ffdb4d, #ff8800);
   color: #32043e;
   border: none;
   border-radius: 16px;
@@ -229,7 +252,7 @@ export default function WithdrawScreen() {
                 alignSelf: 'center',
               }}
             >
-              ⭐
+              <img src={star} style={{width:'20px', height:'20px'}}/>
             </span>
           </Balance>
           <span style={{ color: '#b1a1be', fontWeight: '500' }}>
@@ -240,13 +263,17 @@ export default function WithdrawScreen() {
         <Form onSubmit={handleSubmit}>
           <InputGroup>
             <Label>Сколько вывести</Label>
-            <Input
+            <InputDiv style={{width:'100%', }}>
+              <img src={star} style={{width:'20px', height:'20px'}}/>
+              <span style={{height: '35px', width:'2px', borderRadius:'5px', background: '#3a3342'}}></span>
+            <CountInput
               type="number"
-              placeholder="⭐ | Введите количество"
+              placeholder="Введите количество"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               min={1}
             />
+            </InputDiv>
             <QuickButtons>
               {[50, 100, 500].map((value) => (
                 <QuickButton
@@ -276,7 +303,7 @@ export default function WithdrawScreen() {
           {error && <ErrorText>{error}</ErrorText>}
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? 'Отправка…' : 'Вывести'}
+            {loading ? 'Отправка…' : 'Выввод'}
           </SubmitButton>
         </Form>
       </>
@@ -286,7 +313,7 @@ export default function WithdrawScreen() {
         {withdrawHistory.map((item) => (
           <HistoryItem key={item.id}>
             <span> @{item.recipient_username}</span>
-            <span>{item.stars_amount} ⭐</span>
+            <span>{item.stars_amount} <img src={star} style={{width: '20px', height: '20px'}}/></span>
           </HistoryItem>
         ))}
         {withdrawHistory.length === 0 && (

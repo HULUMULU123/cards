@@ -3,6 +3,8 @@ import styled from 'styled-components'
 
 import useAuthStore from '../store/useAuthStore'
 
+import star from '../assets/icons/star.svg';
+
 const Screen = styled.section`
   display: flex;
   flex-direction: column;
@@ -195,7 +197,7 @@ export default function ProfileScreen() {
       </ProfileGrid>
 
       <BalanceBlock>
-        <p style={{ margin: 'auto', fontSize: '25px' }}>Можно вывести - 300  ⭐</p>
+        <p style={{ margin: 'auto', fontSize: '25px' }}>Можно вывести - 300  <img style={{width: '20px', height: '20px'}}src={star}/></p>
       </BalanceBlock>
 
       <Card>

@@ -33,9 +33,9 @@ const AppShell = styled.div`
     border-radius: 50%;
     background: radial-gradient(
       circle,
-      rgba(120, 0, 255, 0.55) 0%,
-      rgba(120, 0, 255, 0.18) 55%,
-      rgba(120, 0, 255, 0.0) 70%
+      rgba(84, 30, 120, 1) 0%,
+      rgba(120, 0, 255, 0.18) 70%,
+      rgba(120, 0, 255, 0.0) 90%
     );
     filter: blur(90px);
     pointer-events: none;

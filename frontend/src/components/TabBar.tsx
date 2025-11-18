@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
 
+import profile from '../assets/icons/profile.svg'
+import menu from '../assets/icons/menu.svg'
+import widthdraw from '../assets/icons/out.svg'
 const TabBarContainer = styled.nav`
   position: fixed;
   bottom: 16px;
@@ -8,7 +11,7 @@ const TabBarContainer = styled.nav`
   transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.1);
+  background:rgb(79,29,119);
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 12px;
@@ -30,17 +33,42 @@ const TabButton = styled(NavLink)`
 
   &[aria-current='page'] {
     background: linear-gradient(135deg, #ffdb4d 0%, #ff8a00 100%);
-    color: #32043e;
+    color: #fff;
     box-shadow: 0 10px 25px rgba(255, 166, 0, 0.35);
   }
 `
 
+const StyledWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`
+const StyledIcon = styled.img`
+  filter: brightness(0) invert(1);
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;`
+const StyledSpan = styled.span``
 export default function TabBar() {
   return (
     <TabBarContainer>
-      <TabButton to="/profile">Профиль</TabButton>
-      <TabButton to="/collection">Меню</TabButton>
-      <TabButton to="/withdraw">Вывести</TabButton>
+      <TabButton to="/profile">
+        <StyledWrapper>
+          <StyledIcon src={profile}/><StyledSpan>Профиль</StyledSpan>
+        </StyledWrapper>
+      </TabButton>
+      <TabButton to="/collection">
+        <StyledWrapper>
+          <StyledIcon src={menu}/>
+          <StyledSpan>Меню</StyledSpan>
+        </StyledWrapper>
+      </TabButton>
+      <TabButton to="/withdraw">
+        <StyledWrapper>
+          <StyledIcon src={widthdraw}/>
+          <StyledSpan>Вывести</StyledSpan>
+        </StyledWrapper>
+      </TabButton>
     </TabBarContainer>
   )
 }
