@@ -125,7 +125,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get<CollectionResponse>('/collection/', token)
+      const data = await apiClient.get<CollectionResponse>('/menu/', token)
       if (data?.cards) {
         set({ collection: data.cards })
       }

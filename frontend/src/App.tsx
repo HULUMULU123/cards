@@ -11,6 +11,7 @@ import useAuthStore from './store/useAuthStore'
 
 
 import { GlobalStyles } from './styles/globalStyles';
+import GiftCardsScreen from './screens/GiftCardsScreen'
 
 const AppShell = styled.div`
   position: relative;
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/withdraw" element={<WithdrawScreen />} />
           <Route path="/collection" element={<CollectionScreen />} />
+          <Route path="/menu" element={<GiftCardsScreen />} />
           <Route path="*" element={<Navigate to="/profile" replace />} />
         </Routes>
       </Content>

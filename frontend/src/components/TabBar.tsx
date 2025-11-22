@@ -57,7 +57,7 @@ export default function TabBar() {
           <StyledIcon src={profile}/><StyledSpan>Профиль</StyledSpan>
         </StyledWrapper>
       </TabButton>
-      <TabButton to="/collection">
+      <TabButton to="/menu">
         <StyledWrapper>
           <StyledIcon src={menu}/>
           <StyledSpan>Меню</StyledSpan>

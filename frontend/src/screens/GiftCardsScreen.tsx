@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-import giftPack from '../assets/img/card.png'
+import giftPack from '../assets/img/card_pocket.png'
 import starIcon from '../assets/icons/star.svg'
 import linkIcon from '../assets/icons/link.svg'
 
@@ -61,7 +61,7 @@ const CardContainer = styled.div`
   max-width: 420px;
   border-radius: ${(props) => props.theme.radii.xl};
   padding: 24px 20px 28px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+
   box-shadow: 0 28px 48px rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
@@ -69,6 +69,16 @@ const CardContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 18px;
+`
+
+const CardWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background:rgb(50,16,85);
+  padding: 10px;
+  border-radius: 20px;
 `
 
 const CardImageWrapper = styled.div`
@@ -92,6 +102,9 @@ const CardTitle = styled.h2`
 `
 
 const CardSubtitle = styled.p`
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin: 0;
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: 15px;
@@ -111,12 +124,12 @@ const Price = styled.div`
 `
 
 const OpenButton = styled.button`
-  width: 100%;
+  width: 48%;
   max-width: 280px;
   padding: 16px;
   border: none;
   border-radius: 20px;
-  background: linear-gradient(102deg, #fbe38a 0%, #f5c544 100%);
+  background:rgb(50,16,85);
   color: #2d1f07;
   font-weight: 800;
   font-size: 16px;
@@ -167,16 +180,21 @@ export default function GiftCardsScreen() {
       </Header>
 
       <CardContainer>
+        <CardWrapper>
         <CardImageWrapper>
           <CardImage src={giftPack} alt="Gift cards pack" />
         </CardImageWrapper>
         <CardTitle>AL Gift cards</CardTitle>
-        <CardSubtitle>Стоимость одного открытия - 15⭐</CardSubtitle>
+        <CardSubtitle>Стоимость одного открытия - 15 <StarIcon src={starIcon} alt='Stars'/></CardSubtitle>
         <Price>
           15
           <StarIcon src={starIcon} alt="Stars" />
         </Price>
-        <OpenButton>Открыть</OpenButton>
+        </CardWrapper>
+        <div style={{display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <OpenButton>Открыть</OpenButton>
+          <OpenButton>Коллекция</OpenButton>
+        </div>
       </CardContainer>
 
       <Footer>
