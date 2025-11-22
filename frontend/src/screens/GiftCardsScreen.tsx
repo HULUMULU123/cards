@@ -1,8 +1,11 @@
+import { useEffect, useRef, useState } from 'react'
+import Lottie, { type LottieRefCurrentProps } from 'lottie-react'
 import styled from 'styled-components'
 
 import giftPack from '../assets/img/card_pocket.png'
 import starIcon from '../assets/icons/star.svg'
 import linkIcon from '../assets/icons/link.svg'
+import openingAnimation from '../assets/animations/card-opening.json'
 
 const Screen = styled.section`
   display: flex;
@@ -72,13 +75,45 @@ const CardContainer = styled.div`
 `
 
 const CardWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background:rgb(50,16,85);
+  background: #321055;
   padding: 10px;
   border-radius: 20px;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(40px);
+    opacity: 0.9;
+  }
+
+  &::before {
+    top: -140px;
+    right: -110px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 60%);
+  }
+
+  &::after {
+    bottom: -140px;
+    left: -110px;
+    background: radial-gradient(circle, rgba(199, 153, 255, 0.3) 0%, rgba(199, 153, 255, 0) 60%);
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
 `
 
 const CardImageWrapper = styled.div`
@@ -136,6 +171,25 @@ const OpenButton = styled.button`
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
 `
 
+const Overlay = styled.div<{ $isDarkened: boolean; $visible: boolean }>`
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  opacity: ${(props) => (props.$isDarkened ? 1 : 0)};
+  pointer-events: ${(props) => (props.$visible ? 'auto' : 'none')};
+  transition: opacity 0.5s ease;
+  z-index: 20;
+`
+
+const AnimationWrapper = styled.div`
+  width: min(440px, 90vw);
+`
+
+type OverlayPhase = 'idle' | 'fadingIn' | 'animating' | 'fadingOut'
+
 const Footer = styled.div`
   width: 100%;
   max-width: 480px;
@@ -166,6 +220,71 @@ const InviteHint = styled.div`
 `
 
 export default function GiftCardsScreen() {
+  const [overlayPhase, setOverlayPhase] = useState<OverlayPhase>('idle')
+  const [isDarkened, setIsDarkened] = useState(false)
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+
+  const handleOpen = () => {
+    if (overlayPhase !== 'idle') return
+
+    setIsDarkened(false)
+    setOverlayPhase('fadingIn')
+  }
+
+  useEffect(() => {
+    if (overlayPhase === 'fadingIn') {
+      const frame = requestAnimationFrame(() => setIsDarkened(true))
+
+      const timer = setTimeout(() => {
+        setOverlayPhase('animating')
+        lottieRef.current?.stop()
+        lottieRef.current?.goToAndPlay(0, true)
+      }, 500)
+
+      return () => {
+        cancelAnimationFrame(frame)
+        clearTimeout(timer)
+      }
+    }
+
+    if (overlayPhase === 'fadingOut') {
+      setIsDarkened(false)
+
+      const timer = setTimeout(() => setOverlayPhase('idle'), 500)
+
+      return () => clearTimeout(timer)
+    }
+
+    if (overlayPhase === 'idle') {
+      setIsDarkened(false)
+    }
+  }, [overlayPhase])
+
+  useEffect(() => {
+    if (overlayPhase !== 'animating') return
+
+    const instance = lottieRef.current
+    const duration = instance?.getDuration(false)
+    const fallback = setTimeout(() => setOverlayPhase('fadingOut'), (duration ?? 1.5) * 1000)
+
+    return () => clearTimeout(fallback)
+  }, [overlayPhase])
+
+  useEffect(() => {
+    if (overlayPhase === 'idle') return
+
+    const instance = lottieRef.current
+    if (!instance) return
+
+    const handleComplete = () => setOverlayPhase('fadingOut')
+
+    instance.addEventListener('complete', handleComplete)
+
+    return () => {
+      instance.removeEventListener('complete', handleComplete)
+    }
+  }, [overlayPhase])
+
   return (
     <Screen>
       <Header>
@@ -181,18 +300,20 @@ export default function GiftCardsScreen() {
 
       <CardContainer>
         <CardWrapper>
-        <CardImageWrapper>
-          <CardImage src={giftPack} alt="Gift cards pack" />
-        </CardImageWrapper>
-        <CardTitle>AL Gift cards</CardTitle>
-        <CardSubtitle>Стоимость одного открытия - 15 <StarIcon src={starIcon} alt='Stars'/></CardSubtitle>
-        <Price>
-          15
-          <StarIcon src={starIcon} alt="Stars" />
-        </Price>
+          <CardImageWrapper>
+            <CardImage src={giftPack} alt="Gift cards pack" />
+          </CardImageWrapper>
+          <CardTitle>AL Gift cards</CardTitle>
+          <CardSubtitle>
+            Стоимость одного открытия - 15 <StarIcon src={starIcon} alt="Stars" />
+          </CardSubtitle>
+          <Price>
+            15
+            <StarIcon src={starIcon} alt="Stars" />
+          </Price>
         </CardWrapper>
-        <div style={{display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <OpenButton>Открыть</OpenButton>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <OpenButton onClick={handleOpen}>Открыть</OpenButton>
           <OpenButton>Коллекция</OpenButton>
         </div>
       </CardContainer>
@@ -201,6 +322,19 @@ export default function GiftCardsScreen() {
         <NavigationButton>Коллекция</NavigationButton>
         <InviteHint>Пригласи друга и получи бесплатное открытие!</InviteHint>
       </Footer>
+
+      {overlayPhase !== 'idle' && (
+        <Overlay $isDarkened={isDarkened} $visible={overlayPhase !== 'idle'}>
+          <AnimationWrapper>
+            <Lottie
+              lottieRef={lottieRef}
+              animationData={openingAnimation}
+              loop={false}
+              autoplay={false}
+            />
+          </AnimationWrapper>
+        </Overlay>
+      )}
     </Screen>
   )
 }
