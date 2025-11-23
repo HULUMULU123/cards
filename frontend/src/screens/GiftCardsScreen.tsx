@@ -164,7 +164,7 @@ const OpenButton = styled.button`
   padding: 16px;
   border: none;
   border-radius: 20px;
-  background:rgb(50,16,85);
+  background: rgb(50, 16, 85);
   color: #2d1f07;
   font-weight: 800;
   font-size: 16px;
@@ -270,21 +270,6 @@ export default function GiftCardsScreen() {
     return () => clearTimeout(fallback)
   }, [overlayPhase])
 
-  useEffect(() => {
-    if (overlayPhase === 'idle') return
-
-    const instance = lottieRef.current
-    if (!instance) return
-
-    const handleComplete = () => setOverlayPhase('fadingOut')
-
-    instance.addEventListener('complete', handleComplete)
-
-    return () => {
-      instance.removeEventListener('complete', handleComplete)
-    }
-  }, [overlayPhase])
-
   return (
     <Screen>
       <Header>
@@ -331,6 +316,7 @@ export default function GiftCardsScreen() {
               animationData={openingAnimation}
               loop={false}
               autoplay={false}
+              onComplete={() => setOverlayPhase('fadingOut')}
             />
           </AnimationWrapper>
         </Overlay>
