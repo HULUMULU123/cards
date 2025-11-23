@@ -108,15 +108,17 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'true').lower() == 'true'
 CORS_ALLOWED_ORIGINS = [
+    'https://roodensky.online',
+    'https://www.roodensky.online',
     'http://localhost:5173',
-    'https://localhost:5173',
-    '*'
+    'http://127.0.0.1:5173',
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'https://localhost:5173',
-    '*'
+    'https://roodensky.online',
+    'https://www.roodensky.online',
+    'http://localhost',
+    'http://127.0.0.1',
 ]
 
 JAZZMIN_SETTINGS = {
