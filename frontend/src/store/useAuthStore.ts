@@ -20,11 +20,13 @@ const fallbackUser: UserProfile = {
     last_name: 'User',
   },
   telegram_id: '0',
+  telegram_stars_balance: 0,
   stars_balance: 417,
   stars_withdrawable: 300,
   referrals_count: 38,
   cards_opened: 70,
   cards_total: 12,
+  referral_code: 'demo',
 }
 
 const fallbackCards: Card[] = [
@@ -51,13 +53,14 @@ interface AuthState {
 
 interface AuthActions {
   setToken: (token: string | null) => void
-  initialize: () => Promise<void>
+  initialize: (telegram?: typeof window.Telegram.WebApp | null) => Promise<void>
   refreshAll: () => Promise<void>
   fetchProfile: () => Promise<void>
   fetchCollection: () => Promise<void>
   fetchWithdrawHistory: () => Promise<void>
   submitWithdraw: (payload: WithdrawRequest) => Promise<WithdrawHistoryItem>
   openStarsInvoice: (amount: number) => Promise<InvoiceResponse>
+  openCardFromGroup: () => Promise<Card | null>
 }
 
 const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
@@ -71,7 +74,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
 
   setToken: (token) => set({ token }),
 
-  initialize: async () => {
+  initialize: async (telegramInstance) => {
     const { token, appReady } = get()
     if (appReady) {
       return
@@ -81,12 +84,19 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         await get().refreshAll()
         return
       }
-      const telegram = window.Telegram?.WebApp
+      const telegram = telegramInstance || window.Telegram?.WebApp
       if (telegram?.initData) {
         try {
-          const response = await apiClient.post<TelegramAuthResponse>('/auth/telegram/', { init_data: telegram.initData })
+          const authPayload: Record<string, unknown> = { init_data: telegram.initData }
+          const starsBalance = (telegram as unknown as { initDataUnsafe?: { stars?: number; tg_web_app_star_count?: number } })
+            ?.initDataUnsafe?.tg_web_app_star_count
+          if (starsBalance) {
+            authPayload.stars = starsBalance
+          }
+
+          const response = await apiClient.post<TelegramAuthResponse>('/auth/telegram/', authPayload)
           set({ token: response.access, profile: response.profile })
-          telegram.ready()
+          telegram.ready?.()
           await get().refreshAll()
           return
         } catch (error) {
@@ -125,7 +135,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get<CollectionResponse>('/menu/', token)
+      const data = await apiClient.get<CollectionResponse>('/collection/', token)
       if (data?.cards) {
         set({ collection: data.cards })
       }
@@ -166,6 +176,18 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       set({ error: message, loading: false })
       throw error
     }
+  },
+
+  openCardFromGroup: async () => {
+    const { token } = get()
+    if (!token) return null
+    const result = await apiClient.post<{ card: Card }>('/collection/', {}, token)
+    if (result?.card) {
+      await get().fetchCollection()
+      await get().fetchProfile()
+      return result.card
+    }
+    return null
   },
 
   openStarsInvoice: async (amount) => {

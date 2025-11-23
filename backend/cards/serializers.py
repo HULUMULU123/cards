@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import Card, UserProfile, WithdrawRequest
+from .models import Card, CardTemplate, UserProfile, WithdrawRequest
 
 User = get_user_model()
 
@@ -24,19 +24,31 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = (
             'user',
             'telegram_id',
+            'telegram_stars_balance',
             'stars_balance',
             'stars_withdrawable',
             'referrals_count',
             'cards_opened',
+            'referral_code',
         )
 
 
 class CardSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    animation_url = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
 
     class Meta:
         model = Card
-        fields = ('id', 'title', 'rarity', 'quantity', 'image_url')
+        fields = (
+            'id',
+            'title',
+            'rarity',
+            'quantity',
+            'image_url',
+            'animation_url',
+            'group',
+        )
 
     def get_image_url(self, obj):
         if not obj.image:
@@ -46,6 +58,18 @@ class CardSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(url)
         return url
+
+    def get_animation_url(self, obj):
+        if not obj.animation:
+            return None
+        request = self.context.get('request')
+        url = obj.animation.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+
+    def get_group(self, obj):
+        return obj.template.group.name if obj.template and obj.template.group else None
 
 
 class WithdrawRequestSerializer(serializers.ModelSerializer):
