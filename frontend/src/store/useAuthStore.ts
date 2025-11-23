@@ -93,13 +93,17 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         return
       }
       const telegram = telegramInstance || window.Telegram?.WebApp
-      if (telegram?.initData) {
-        try {
-          const starsBalance = (telegram as unknown as { initDataUnsafe?: { stars?: number; tg_web_app_star_count?: number } })
-            ?.initDataUnsafe?.tg_web_app_star_count
+        if (telegram?.initData) {
+          try {
+          const starsBalance = telegram.initDataUnsafe?.tg_web_app_star_count
 
           const response = await authorizeWithTelegram(telegram.initData, starsBalance)
-          set({ token: response.access, profile: response.profile })
+          const photoUrl = telegram.initDataUnsafe?.user?.photo_url
+          const profile = photoUrl
+            ? { ...response.profile, user: { ...response.profile.user, photo_url: photoUrl } }
+            : response.profile
+
+          set({ token: response.access, profile })
           telegram.ready?.()
           await get().refreshAll()
           return
@@ -128,7 +132,12 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     try {
       const data = await fetchProfileApi(token)
       if (data) {
-        set({ profile: data })
+        const currentPhoto = get().profile?.user?.photo_url
+        const profile = data.user
+          ? { ...data, user: { ...data.user, photo_url: data.user.photo_url ?? currentPhoto } }
+          : data
+
+        set({ profile })
       }
     } catch (error) {
       console.error('Failed to fetch profile', error)
