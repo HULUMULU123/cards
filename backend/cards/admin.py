@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CollectionCard, UserProfile, WithdrawRequest
+from .models import CollectionCard, UserProfile, WithdrawRequest, CardTemplate, CardGroup
 
 admin.site.site_header = 'Администрирование карточек'
 admin.site.site_title = 'Админка карточек'
@@ -26,3 +26,15 @@ class WithdrawRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipient_username', 'stars_amount', 'status', 'created_at')
     list_filter = ('status',)
     search_fields = ('user__username', 'recipient_username')
+
+@admin.register(CardTemplate)
+class CardTemplateAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in CardTemplate._meta.fields]
+    list_filter = ('title',)
+    search_fields = ('title',)
+
+@admin.register(CardGroup)
+class CardGroupAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in CardGroup._meta.fields]
+    list_filter = ('name',)
+    search_fields = ('name',)
