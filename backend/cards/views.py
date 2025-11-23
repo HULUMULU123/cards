@@ -46,36 +46,56 @@ User = get_user_model()
 #         return None
 #     return data
 
-def verify_telegram_init_data(init_data: str) -> Optional[dict]:
-    print("INIT_DATA RAW:", init_data)
 
+
+def verify_telegram_init_data(init_data: str) -> Optional[dict]:
+    """
+    Верификация initData из Telegram WebApp.
+    Алгоритм:
+      1) Парсим query-string в dict
+      2) Достаём и запоминаем hash
+      3) Формируем data_check_string из остальных пар key=value (отсортированных по key)
+      4) secret_key = HMAC_SHA256(key='WebAppData', msg=BOT_TOKEN)
+      5) calculated_hash = HMAC_SHA256(key=secret_key, msg=data_check_string)
+      6) сравниваем с hash
+    """
     if not init_data:
-        print("NO INIT_DATA")
         return None
 
+    # Разбор строки вида "query_id=...&user=...&auth_date=...&hash=..."
     data = dict(parse_qsl(init_data, keep_blank_values=True))
-    print("PARSED DATA (WITHOUT CHECK):", data)
 
     incoming_hash = data.pop('hash', None)
-    print("INCOMING HASH:", incoming_hash)
-
     if not incoming_hash:
-        print("NO HASH IN DATA")
         return None
 
-    data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted(data.items()))
-    print("DATA CHECK STRING:", data_check_string)
+    # Строка для подписи: key=value\nkey=value...
+    data_check_string = '\n'.join(
+        f"{k}={v}" for k, v in sorted(data.items())
+    )
 
-    secret_key = hashlib.sha256(settings.TELEGRAM_BOT_TOKEN.encode()).digest()
-    calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-    print("CALCULATED HASH:", calculated_hash)
+    # Шаг 3–4 по докам: secret_key = HMAC_SHA256("WebAppData", bot_token)
+    secret_key = hmac.new(
+        key=b'WebAppData',
+        msg=settings.TELEGRAM_BOT_TOKEN.encode(),
+        digestmod=hashlib.sha256,
+    ).digest()
 
+    # Шаг 5: hash = HMAC_SHA256(secret_key, data_check_string)
+    calculated_hash = hmac.new(
+        key=secret_key,
+        msg=data_check_string.encode(),
+        digestmod=hashlib.sha256,
+    ).hexdigest()
+
+    # Сравнение
     if not hmac.compare_digest(calculated_hash, incoming_hash):
-        print("HASH MISMATCH")
+        # Можно оставить лог, если нужно дебажить:
+        # print("HASH MISMATCH:", calculated_hash, "!=", incoming_hash)
         return None
 
-    print("HASH OK")
     return data
+
 
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
