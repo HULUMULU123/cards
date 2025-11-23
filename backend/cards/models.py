@@ -95,7 +95,7 @@ class CardTemplate(models.Model):
         return self.title
 
 
-class Card(models.Model):
+class CollectionCard(models.Model):
     RARITY_CHOICES = (
         ('common', 'Обычная'),
         ('rare', 'Редкая'),
@@ -104,13 +104,12 @@ class Card(models.Model):
     )
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='cards', verbose_name='Пользователь'
+        User, on_delete=models.CASCADE, related_name='collection', verbose_name='Пользователь'
     )
     title = models.CharField(max_length=255, verbose_name='Название')
     rarity = models.CharField(
         max_length=32, choices=RARITY_CHOICES, default='common', verbose_name='Редкость'
     )
-    quantity = models.PositiveIntegerField(default=1, verbose_name='Количество')
     image = models.ImageField(upload_to='cards/', blank=True, null=True, verbose_name='Изображение')
     animation = models.FileField(
         upload_to='cards/animations/',
@@ -123,16 +122,22 @@ class Card(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='instances',
+        related_name='collection_cards',
         verbose_name='Шаблон карточки',
     )
 
     def __str__(self):
-        return f"{self.title} x{self.quantity} ({self.user.username})"
+        return f"{self.title} ({self.user.username})"
 
     class Meta:
-        verbose_name = 'Карточка'
-        verbose_name_plural = 'Карточки'
+        db_table = 'collection'
+        verbose_name = 'Коллекция'
+        verbose_name_plural = 'Коллекции'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'template'], name='unique_user_card_template'
+            )
+        ]
 
 
 class WithdrawRequest(models.Model):

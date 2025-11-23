@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import Card, UserProfile
+from .models import CollectionCard, UserProfile
 
 User = get_user_model()
 
@@ -18,15 +18,13 @@ def create_user_profile(sender, instance, created, **kwargs):
             cards_opened=417,
         )
         # добавить стартовую коллекцию для демонстрации
-        Card.objects.create(
+        CollectionCard.objects.create(
             user=instance,
             title='Ice Watch',
             rarity='epic',
-            quantity=3,
         )
-        Card.objects.create(
+        CollectionCard.objects.create(
             user=instance,
             title='City Lights',
             rarity='rare',
-            quantity=7,
         )

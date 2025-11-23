@@ -1,10 +1,10 @@
 import { create } from 'zustand'
 
 import apiClient from '../api/client'
+import { fetchCollection as fetchCollectionApi, openCard as openCardApi } from '../api/cards'
 import fallbackCardImage from '../assets/img/card.png'
 import {
   Card,
-  CollectionResponse,
   InvoiceResponse,
   TelegramAuthResponse,
   UserProfile,
@@ -135,7 +135,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await apiClient.get<CollectionResponse>('/collection/', token)
+      const data = await fetchCollectionApi(token)
       if (data?.cards) {
         set({ collection: data.cards })
       }
@@ -181,7 +181,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   openCardFromGroup: async () => {
     const { token } = get()
     if (!token) return null
-    const result = await apiClient.post<{ card: Card }>('/collection/', {}, token)
+    const result = await openCardApi(token)
     if (result?.card) {
       await get().fetchCollection()
       await get().fetchProfile()
