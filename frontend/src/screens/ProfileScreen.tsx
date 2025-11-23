@@ -38,7 +38,6 @@ const Avatar = styled.div`
   overflow: hidden;
   border: 4px solid rgba(255, 255, 255, 0.45);
   margin: 0 auto 10px;
-  background: url('https://placehold.co/200x200/ff00aa/ffffff?text=Avatar') center/cover;
 `
 
 const Heading = styled.h1`

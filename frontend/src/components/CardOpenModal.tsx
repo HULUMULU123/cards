@@ -8,7 +8,7 @@ import { Card } from '../types/entities'
 const Backdrop = styled.div<{ $visible: boolean }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 1);
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transition: opacity 0.5s ease;
   display: flex;
