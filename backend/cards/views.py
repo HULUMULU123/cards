@@ -125,6 +125,7 @@ class TelegramAuthView(APIView):
         defaults = {
             'first_name': user_payload.get('first_name', ''),
             'last_name': user_payload.get('last_name', ''),
+            'photo_url': user_payload.get('photo_url', ''),
         }
         user, _ = User.objects.get_or_create(username=username, defaults=defaults)
         updated = False
