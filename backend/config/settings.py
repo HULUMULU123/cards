@@ -110,11 +110,13 @@ CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'true').lower(
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'https://localhost:5173',
+    '*'
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'https://localhost:5173',
+    '*'
 ]
 
 JAZZMIN_SETTINGS = {
