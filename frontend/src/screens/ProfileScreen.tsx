@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import useAuthStore from '../store/useAuthStore'
@@ -137,6 +137,11 @@ const ProgressFill = styled.div<{ $percent: number }>`
 
 export default function ProfileScreen() {
   const profile = useAuthStore((state) => state.profile)
+  const fetchProfile = useAuthStore((state) => state.fetchProfile)
+
+  useEffect(() => {
+    void fetchProfile()
+  }, [fetchProfile])
 
   const formattedName = useMemo(() => {
     if (!profile) return 'Профиль'
@@ -150,8 +155,8 @@ export default function ProfileScreen() {
   }
 
   const opened = profile?.cards_opened ?? 0
-  const total = 417
-  const percent = Math.min(100, Math.round((opened / total) * 100))
+  const total = profile?.cards_total ?? 0
+  const percent = total > 0 ? Math.min(100, Math.round((opened / total) * 100)) : 0
 
   return (
     <Screen>

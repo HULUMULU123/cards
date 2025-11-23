@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 
@@ -140,9 +140,13 @@ const ActionsRow = styled.div`
 
 export default function GiftCardsScreen() {
   const navigate = useNavigate()
-  const { profile, openCardFromGroup } = useAuthStore()
+  const { profile, openCardFromGroup, fetchProfile } = useAuthStore()
   const [openedCard, setOpenedCard] = useState<Card | null>(null)
   const [opening, setOpening] = useState(false)
+
+  useEffect(() => {
+    void fetchProfile()
+  }, [fetchProfile])
 
   const handleCopyReferral = () => {
     if (profile?.referral_link) {
