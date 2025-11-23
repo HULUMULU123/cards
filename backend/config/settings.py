@@ -126,3 +126,4 @@ JAZZMIN_SETTINGS = {
 
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', 'telegram-bot-token')
 TELEGRAM_PAYMENT_PROVIDER_TOKEN = os.environ.get('TELEGRAM_PAYMENT_PROVIDER_TOKEN', 'payment-provider-token')
+TELEGRAM_BOT_NAME = os.environ.get('TELEGRAM_BOT_NAME', 'your_bot_name')

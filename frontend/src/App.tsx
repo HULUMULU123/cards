@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
 import styled from 'styled-components'
 
 import TabBar from './components/TabBar'
@@ -8,6 +7,7 @@ import CollectionScreen from './screens/CollectionScreen'
 import ProfileScreen from './screens/ProfileScreen'
 import WithdrawScreen from './screens/WithdrawScreen'
 import useAuthStore from './store/useAuthStore'
+import useTelegramAuth from './hooks/useTelegramAuth'
 
 
 import { GlobalStyles } from './styles/globalStyles';
@@ -66,12 +66,8 @@ const Content = styled.main`
 
 export default function App() {
   const location = useLocation()
-  const initialize = useAuthStore((state) => state.initialize)
   const appReady = useAuthStore((state) => state.appReady)
-
-  useEffect(() => {
-    void initialize()
-  }, [initialize])
+  useTelegramAuth()
 
   if (!appReady) {
     return <LoadingScreen />

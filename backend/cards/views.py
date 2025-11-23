@@ -1,18 +1,19 @@
 import hashlib
 import hmac
 import json
+import random
 from typing import Optional
 from urllib.parse import parse_qsl
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.db import models, transaction
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Card, UserProfile, WithdrawRequest
+from .models import Card, CardGroup, CardTemplate, UserProfile, WithdrawRequest
 from .serializers import (
     CardSerializer,
     StarsInvoiceSerializer,
@@ -73,9 +74,34 @@ class TelegramAuthView(APIView):
             user.save(update_fields=['first_name', 'last_name'])
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
+        updated_fields = []
         if profile.telegram_id != str(user_payload['id']):
             profile.telegram_id = str(user_payload['id'])
-            profile.save(update_fields=['telegram_id'])
+            updated_fields.append('telegram_id')
+
+        stars_balance = parsed_data.get('tg_web_app_star_count') or parsed_data.get('stars', 0)
+        try:
+            stars_balance_value = int(stars_balance)
+        except (TypeError, ValueError):
+            stars_balance_value = 0
+        if stars_balance_value and profile.telegram_stars_balance != stars_balance_value:
+            profile.telegram_stars_balance = stars_balance_value
+            updated_fields.append('telegram_stars_balance')
+
+        start_param = parsed_data.get('start_param') or parsed_data.get('start')
+        if start_param and start_param.startswith('ref_') and not profile.referred_by:
+            referral_code = start_param.replace('ref_', '', 1)
+            inviter_profile = UserProfile.objects.filter(referral_code=referral_code).first()
+            if inviter_profile and inviter_profile != profile:
+                profile.referred_by = inviter_profile
+                updated_fields.append('referred_by')
+                inviter_profile.referrals_count = models.F('referrals_count') + 1
+                inviter_profile.save(update_fields=['referrals_count'])
+
+        if updated_fields:
+            profile.save(update_fields=updated_fields)
+        else:
+            profile.save()
 
         refresh = RefreshToken.for_user(user)
         return Response(
@@ -91,8 +117,13 @@ class ProfileView(APIView):
     def get(self, request, *args, **kwargs):
         profile = request.user.profile
         data = UserProfileSerializer(profile).data
-        data['referral_link'] = f"https://t.me/{request.user.username}?start=ref"
+        data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
         data['cards_total'] = Card.objects.filter(user=request.user).count()
+        data['cards_groups'] = (
+            Card.objects.filter(user=request.user)
+            .values('template__group__name')
+            .annotate(count=models.Count('id'))
+        )
         return Response(data)
 
 
@@ -101,6 +132,41 @@ class CollectionView(APIView):
         cards = Card.objects.filter(user=request.user).order_by('title')
         serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response({'cards': serializer.data})
+
+    def post(self, request, *args, **kwargs):
+        groups = list(CardGroup.objects.all())
+        if not groups:
+            return Response({'detail': 'Группы карточек не настроены'}, status=status.HTTP_400_BAD_REQUEST)
+        weights = [group.drop_chance for group in groups]
+        selected_group = random.choices(groups, weights=weights, k=1)[0]
+
+        templates = list(selected_group.templates.all())
+        if not templates:
+            return Response({'detail': 'В выбранной группе нет карточек'}, status=status.HTTP_400_BAD_REQUEST)
+
+        template = random.choice(templates)
+        card, created = Card.objects.get_or_create(
+            user=request.user,
+            template=template,
+            defaults={
+                'title': template.title,
+                'rarity': template.rarity,
+                'image': template.image,
+                'animation': template.animation,
+            },
+        )
+        if not created:
+            card.quantity = models.F('quantity') + 1
+            card.save(update_fields=['quantity'])
+            card.refresh_from_db()
+
+        profile = request.user.profile
+        profile.cards_opened = models.F('cards_opened') + 1
+        profile.save(update_fields=['cards_opened'])
+        profile.refresh_from_db()
+
+        serializer = CardSerializer(card, context={'request': request})
+        return Response({'card': serializer.data, 'group': selected_group.name})
 
 
 class WithdrawView(APIView):

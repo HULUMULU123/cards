@@ -7,12 +7,15 @@ export interface TelegramUser {
 export interface UserProfile {
   user: TelegramUser
   telegram_id: string
+  telegram_stars_balance: number
   stars_balance: number
   stars_withdrawable: number
   referrals_count: number
   cards_opened: number
   cards_total: number
+  referral_code: string
   referral_link?: string
+  cards_groups?: { template__group__name: string; count: number }[]
 }
 
 export interface Card {
@@ -21,6 +24,8 @@ export interface Card {
   rarity: string
   quantity: number
   image_url?: string
+  animation_url?: string
+  group?: string | null
 }
 
 export interface WithdrawRequest {
