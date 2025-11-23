@@ -81,7 +81,7 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
         digestmod=hashlib.sha256,
     ).digest()
 
-    print('settings', settings.TELEGRAM_BOT_TOKEN.encode())
+   
 
     # Шаг 5: hash = HMAC_SHA256(secret_key, data_check_string)
     calculated_hash = hmac.new(
@@ -90,7 +90,7 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
         digestmod=hashlib.sha256,
     ).hexdigest()
 
-    print(data_check_string.encode())
+   
 
     # Сравнение
     if not hmac.compare_digest(calculated_hash, incoming_hash):
@@ -105,7 +105,7 @@ class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        print('data', request.data)
+        
         serializer = TelegramAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         parsed_data = verify_telegram_init_data(serializer.validated_data['init_data'])
