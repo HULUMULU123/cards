@@ -160,7 +160,7 @@ export default function ProfileScreen() {
   const opened = profile?.cards_opened ?? 0
   const total = profile?.cards_total ?? 0
   const percent = total > 0 ? Math.min(100, Math.round((opened / total) * 100)) : 0
-
+  console.log('user', profile?.user)
   return (
     <Screen>
       <Heading>Профиль</Heading>
