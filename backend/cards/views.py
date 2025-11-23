@@ -125,7 +125,7 @@ class TelegramAuthView(APIView):
         defaults = {
             'first_name': user_payload.get('first_name', ''),
             'last_name': user_payload.get('last_name', ''),
-            'photo_url': user_payload.get('photo_url', ''),
+            'photo_url': user_payload.get('last_name', ''),
         }
         user, _ = User.objects.get_or_create(username=username, defaults=defaults)
         updated = False
@@ -134,7 +134,7 @@ class TelegramAuthView(APIView):
                 setattr(user, field, value)
                 updated = True
         if updated:
-            user.save(update_fields=['first_name', 'last_name'])
+            user.save(update_fields=['first_name', 'last_name', 'photo_url'])
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
         updated_fields = []

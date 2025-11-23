@@ -9,6 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile', verbose_name='Пользователь'
     )
+    photo_url = models.CharField(max_length=256, verbose_name='Фото в Telegram')
     telegram_id = models.CharField(
         max_length=64, unique=True, blank=True, null=True, verbose_name='ID в Telegram'
     )
