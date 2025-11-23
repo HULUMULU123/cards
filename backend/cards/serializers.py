@@ -23,7 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = (
             'user',
-            'photo_url',
+            
             'telegram_id',
             'telegram_stars_balance',
             'stars_balance',
