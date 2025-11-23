@@ -170,11 +170,11 @@ export default function GiftCardsScreen() {
   return (
     <Screen>
       <Header>
-        <BalancePill value={profile?.stars_balance} label="звёзд" />
-        <BalancePill value={profile?.telegram_stars_balance} label="звёзд в TG" />
+        <ReferralBadge link={profile?.referral_link} onCopy={handleCopyReferral} />
+        <BalancePill value={profile?.telegram_stars_balance}  />
       </Header>
 
-      <ReferralBadge link={profile?.referral_link} onCopy={handleCopyReferral} />
+      
 
       <CardContainer>
         <CardWrapper>

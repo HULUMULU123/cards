@@ -27,8 +27,9 @@ interface BalancePillProps {
 export default function BalancePill({ value = 0, label = 'звёзд' }: BalancePillProps) {
   return (
     <BalanceWrapper>
+      
+      {value} 
       <StarIcon src={starIcon} alt="star" />
-      {value} {label}
     </BalanceWrapper>
   )
 }

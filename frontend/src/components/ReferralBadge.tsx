@@ -31,7 +31,7 @@ export default function ReferralBadge({ link, onCopy }: ReferralBadgeProps) {
   return (
     <ReferralButton onClick={onCopy} disabled={!link}>
       <LinkIcon src={linkIcon} alt="link" />
-      {link || 'Ссылка недоступна'}
+      <span style={{fontSize: '14px', fontWeight:'500', color:'#fff'}}>Ссылка недоступна</span>
     </ReferralButton>
   )
 }
