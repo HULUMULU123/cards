@@ -28,6 +28,7 @@ const ModalCard = styled.div`
   gap: 12px;
   align-items: center;
   text-align: center;
+  width: 100%;
 `
 
 interface CardOpenModalProps {

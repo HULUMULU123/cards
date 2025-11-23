@@ -306,7 +306,7 @@ export default function WithdrawScreen() {
           {error && <ErrorText>{error}</ErrorText>}
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? 'Отправка…' : 'Выввод'}
+            {loading ? 'Отправка…' : 'Вывод'}
           </SubmitButton>
         </Form>
       </>
