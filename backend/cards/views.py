@@ -32,20 +32,50 @@ from .serializers import (
 User = get_user_model()
 
 
+# def verify_telegram_init_data(init_data: str) -> Optional[dict]:
+#     if not init_data:
+#         return None
+#     data = dict(parse_qsl(init_data, keep_blank_values=True))
+#     incoming_hash = data.pop('hash', None)
+#     if not incoming_hash:
+#         return None
+#     data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted(data.items()))
+#     secret_key = hashlib.sha256(settings.TELEGRAM_BOT_TOKEN.encode()).digest()
+#     calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+#     if not hmac.compare_digest(calculated_hash, incoming_hash):
+#         return None
+#     return data
+
 def verify_telegram_init_data(init_data: str) -> Optional[dict]:
+    print("INIT_DATA RAW:", init_data)
+
     if not init_data:
+        print("NO INIT_DATA")
         return None
+
     data = dict(parse_qsl(init_data, keep_blank_values=True))
+    print("PARSED DATA (WITHOUT CHECK):", data)
+
     incoming_hash = data.pop('hash', None)
+    print("INCOMING HASH:", incoming_hash)
+
     if not incoming_hash:
+        print("NO HASH IN DATA")
         return None
+
     data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted(data.items()))
+    print("DATA CHECK STRING:", data_check_string)
+
     secret_key = hashlib.sha256(settings.TELEGRAM_BOT_TOKEN.encode()).digest()
     calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(calculated_hash, incoming_hash):
-        return None
-    return data
+    print("CALCULATED HASH:", calculated_hash)
 
+    if not hmac.compare_digest(calculated_hash, incoming_hash):
+        print("HASH MISMATCH")
+        return None
+
+    print("HASH OK")
+    return data
 
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
