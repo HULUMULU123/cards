@@ -19,6 +19,7 @@ const TabBarContainer = styled.nav`
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   z-index: 10;
+  border: 1.2px solid #5f5867;
 `
 
 const TabButton = styled(NavLink)`

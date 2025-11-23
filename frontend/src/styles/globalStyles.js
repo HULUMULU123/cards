@@ -5,7 +5,7 @@ export  const GlobalStyles = createGlobalStyle`
   @font-face {
     font-family: 'Montseratt';
     src: url(${Montseratt}) format('truetype');
-    font-weight: normal;
+    
     font-style: normal;
   }
 

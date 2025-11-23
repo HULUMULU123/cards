@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import useAuthStore from '../store/useAuthStore'
 
 import star from '../assets/icons/star.svg';
-
+import reffreal from '../assets/icons/link.svg'
 const Screen = styled.section`
   display: flex;
   flex-direction: column;
@@ -17,7 +17,7 @@ const Card = styled.div<{ $group?: string }>`
   width: 100%;
   max-width: 480px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(86, 0, 212, 0.45));
-  border-radius: ${(props) => props.theme.radii.xl};
+  border-radius: ${(props) => props.theme.radii.lg};
   padding: 10px;
   backdrop-filter: blur(12px);
   grid-area: ${(props) => props.$group || 'auto'};
@@ -26,6 +26,9 @@ const Card = styled.div<{ $group?: string }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border: 1.2px solid #5f5867;
+
+  
 `
 
 const Avatar = styled.div`
@@ -39,20 +42,21 @@ const Avatar = styled.div`
 `
 
 const Heading = styled.h1`
-  font-size: 40px;
+  font-size: 50px;
   margin: 0 0 12px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 1px;
 `
 
 const Username = styled.div`
   font-size: 16px;
-  color: ${(props) => props.theme.colors.textSecondary};
+  color: rgb(204,	186,	207);
+  font-weight: 300;
 `
 
 const ReferralBlock = styled.div`
   width: 100%;
-  padding: 20px;
+  padding: 10px 20px;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -69,23 +73,24 @@ const ReferralLink = styled.div`
   align-items: center;
   gap: 12px;
   word-break: break-all;
+  border: 1.2px solid #5f5867;
 `
 
 const CopyButton = styled.button`
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border: none;
-  width: 50px;
+ 
   border-radius: 12px;
-  font-weight: 700;
-  padding: 5px 7px;
+  font-weight: 500;
+  padding: 3px 15px;
   cursor: pointer;
-  font-size: 8px;
+  font-size: 12px;
   margin-left: auto;
 `
 
 const SecondaryText = styled.p`
-  color: ${(props) => props.theme.colors.textSecondary};
+  color: rgb(204,	186,	207);
   margin: 0;
   font-size: 14px;
   width: 70%;
@@ -155,22 +160,22 @@ export default function ProfileScreen() {
       <ProfileGrid>
         <Card $group="a">
           <Avatar />
-          <h2 style={{ margin: '0 0 0', fontSize: '24px' }}>{formattedName}</h2>
+          <h2 style={{ margin: '0 0 0', fontSize: '24px', fontWeight: '600' }}>{formattedName}</h2>
           <Username>@{profile?.user?.username || 'tg_demo'}</Username>
         </Card>
 
         <Card $group="b">
           <p
             style={{
-              fontSize: '32px',
+              fontSize: '38px',
               margin: '0',
               padding: '0',
-              fontWeight: '700',
+              fontWeight: '600',
             }}
           >
             {opened}/{total}
           </p>
-          <span style={{ fontSize: '12px', color: 'rgba(193,169,209)' }}>
+          <span style={{ fontSize: '12px', color: 'rgb(204,	186,	207)' }}>
             Собрано карт
           </span>
 
@@ -182,28 +187,31 @@ export default function ProfileScreen() {
         <Card $group="c">
           <span
             style={{
-              fontSize: '32px',
+              fontSize: '38px',
               margin: '0',
               padding: '0',
-              fontWeight: '700',
+              fontWeight: '600',
             }}
           >
             {profile?.cards_total ?? 0}
           </span>
-          <span style={{ fontSize: '12px', color: 'rgba(193,169,209)' }}>
+          <span style={{ fontSize: '12px', color: 'rgb(204,	186,	207)', }}>
             В коллекции
           </span>
         </Card>
       </ProfileGrid>
 
       <BalanceBlock>
-        <p style={{ margin: 'auto', fontSize: '25px' }}>Можно вывести - 300  <img style={{width: '20px', height: '20px'}}src={star}/></p>
+        <p style={{ margin: 'auto', fontSize: '30px', fontWeight: '500' }}>Можно вывести - 300  <img style={{width: '25px', height: '25px'}}src={star}/></p>
       </BalanceBlock>
 
       <Card>
         <ReferralBlock>
           <div style={{ display: 'flex' }}>
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '300' }}>REFERRAL LINK</h3>
+            <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+              <img src={reffreal} style={{width:'15px', height: '15px', filter: 'brightness(0) invert(1)'}}/>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '500' }}>REFERRAL LINK</h3>
+            </div>
             <CopyButton onClick={handleCopy}>COPY</CopyButton>
           </div>
           <ReferralLink>

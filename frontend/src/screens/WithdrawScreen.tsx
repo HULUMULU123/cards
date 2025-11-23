@@ -156,6 +156,7 @@ const History = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border: 1px solid #3a3342;
 `;
 
 const HistoryItem = styled.div`
@@ -308,7 +309,7 @@ export default function WithdrawScreen() {
         </Form>
       </>
 
-      <History>
+      {/* <History>
         <h3 style={{ margin: 0 }}>История выводов</h3>
         {withdrawHistory.map((item) => (
           <HistoryItem key={item.id}>
@@ -319,7 +320,7 @@ export default function WithdrawScreen() {
         {withdrawHistory.length === 0 && (
           <span style={{ color: '#b79cff' }}>История пока пуста</span>
         )}
-      </History>
+      </History> */}
 
       {/* <StarsButton type="button" onClick={handleBuyStars}>
         Купить звёзды через Telegram

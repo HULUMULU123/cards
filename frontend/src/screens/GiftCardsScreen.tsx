@@ -7,6 +7,7 @@ import giftPack from '../assets/img/card_pocket.png'
 import starIcon from '../assets/icons/star.svg'
 import linkIcon from '../assets/icons/link.svg'
 import openingAnimation from '../assets/animations/card-opening.json'
+import { useNavigate } from 'react-router-dom'
 
 const Screen = styled.section`
   display: flex;
@@ -28,19 +29,21 @@ const ReferralButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  background:rgb(66, 24, 100);
   color: ${(props) => props.theme.colors.textPrimary};
   border: none;
-  border-radius: ${(props) => props.theme.radii.md};
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  border-radius: ${(props) => props.theme.radii.sm};
+  font-weight: 500;
+  letter-spacing: 0.05em;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  border: 1.2px solid #5f5867;
 `
 
 const LinkIcon = styled.img`
-  width: 18px;
-  height: 18px;
+  width: 13px;
+  height: 13px;
+  filter: brightness(0) invert(1);
 `
 
 const Balance = styled.div`
@@ -48,11 +51,13 @@ const Balance = styled.div`
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border-radius: ${(props) => props.theme.radii.lg};
-  background: linear-gradient(102deg, #f9f2b3 0%, #f5c544 100%);
-  color: #000;
+  border-radius: ${(props) => props.theme.radii.sm};
+  background:rgb(79,29,119);
+  color: #fff;
   font-weight: 800;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  border: 1.2px solid #5f5867;
+  
 `
 
 const StarIcon = styled.img`
@@ -80,10 +85,14 @@ const CardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  background: #321055;
-  padding: 10px;
-  border-radius: 20px;
+  gap: 14px;
+
+  padding: 22px 12px;
+  border-radius: 22px;
+  width: 90%;
+  border: 1.2px solid #6d5c82;
+
+  background: rgb(47, 15, 76);
   overflow: hidden;
   isolation: isolate;
 
@@ -91,31 +100,32 @@ const CardWrapper = styled.div`
   &::after {
     content: '';
     position: absolute;
-    width: 280px;
-    height: 280px;
+    width: 250px;
+    height: 250px;
     border-radius: 50%;
+    filter: blur(55px);
+    opacity: 0.75;
     pointer-events: none;
-    filter: blur(40px);
-    opacity: 0.9;
   }
 
   &::before {
-    top: -140px;
+    top: -130px;
     right: -110px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 60%);
+    background: rgba(155, 33, 255, 1);
   }
 
   &::after {
-    bottom: -140px;
+    bottom: -200px;
     left: -110px;
-    background: radial-gradient(circle, rgba(199, 153, 255, 0.3) 0%, rgba(199, 153, 255, 0) 60%);
+    background: rgba(155, 33, 255, 0.7);
   }
 
   & > * {
-    position: relative;
     z-index: 1;
+    position: relative;
   }
 `
+
 
 const CardImageWrapper = styled.div`
   width: 100%;
@@ -160,6 +170,20 @@ const Price = styled.div`
 `
 
 const OpenButton = styled.button`
+  width: 60%;
+  max-width: 280px;
+  padding: 10px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #ffdb4d 0%, #ff8a00 100%);
+  color: #2d1f07;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+  font-size: 22px;
+  
+`
+const SecodaryButton = styled.button`
   width: 48%;
   max-width: 280px;
   padding: 16px;
@@ -167,9 +191,11 @@ const OpenButton = styled.button`
   border-radius: 20px;
   background: rgb(50, 16, 85);
   color: #2d1f07;
-  font-weight: 800;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 18px;
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  border: 1.2px solid #5f5867;
 `
 
 const Overlay = styled.div<{ $isDarkened: boolean; $visible: boolean }>`
@@ -178,7 +204,7 @@ const Overlay = styled.div<{ $isDarkened: boolean; $visible: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 1);
   opacity: ${(props) => (props.$isDarkened ? 1 : 0)};
   pointer-events: ${(props) => (props.$visible ? 'auto' : 'none')};
   transition: opacity 0.5s ease;
@@ -186,13 +212,13 @@ const Overlay = styled.div<{ $isDarkened: boolean; $visible: boolean }>`
 `
 
 const AnimationWrapper = styled.div`
-  width: min(440px, 90vw);
+  width: min(440px, 100vw);
 `
 
 type OverlayPhase = 'idle' | 'fadingIn' | 'animating' | 'fadingOut'
 
 const Footer = styled.div`
-  width: 100%;
+  width: 80%;
   max-width: 480px;
   display: flex;
   flex-direction: column;
@@ -214,17 +240,20 @@ const InviteHint = styled.div`
   justify-content: center;
   padding: 10px 14px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  
   color: ${(props) => props.theme.colors.textSecondary};
-  font-size: 14px;
+  font-size: 18px;
   text-align: center;
+  line-height: 1.5;
+  color: rgb(204,	186,	207);
+
 `
 
 export default function GiftCardsScreen() {
   const [overlayPhase, setOverlayPhase] = useState<OverlayPhase>('idle')
   const [isDarkened, setIsDarkened] = useState(false)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
-
+  const navigate = useNavigate()
   const handleOpen = () => {
     if (overlayPhase !== 'idle') return
 
@@ -279,7 +308,9 @@ export default function GiftCardsScreen() {
           REFERRAL
         </ReferralButton>
         <Balance>
-          1000
+          <span style={{fontWeight: '700', letterSpacing: '0.05rem'}}>
+            1000
+          </span>
           <StarIcon src={starIcon} alt="Stars" />
         </Balance>
       </Header>
@@ -289,23 +320,20 @@ export default function GiftCardsScreen() {
           <CardImageWrapper>
             <CardImage src={giftPack} alt="Gift cards pack" />
           </CardImageWrapper>
-          <CardTitle>AL Gift cards</CardTitle>
+          
           <CardSubtitle>
             Стоимость одного открытия - 15 <StarIcon src={starIcon} alt="Stars" />
           </CardSubtitle>
-          <Price>
-            15
-            <StarIcon src={starIcon} alt="Stars" />
-          </Price>
+          <OpenButton onClick={handleOpen}>Открыть</OpenButton>
         </CardWrapper>
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <OpenButton onClick={handleOpen}>Открыть</OpenButton>
-          <OpenButton>Коллекция</OpenButton>
+          <SecodaryButton onClick={()=>navigate('/collection')}>Коллекция</SecodaryButton>
+          <SecodaryButton>Звезды</SecodaryButton>
         </div>
       </CardContainer>
 
       <Footer>
-        <NavigationButton>Коллекция</NavigationButton>
+        
         <InviteHint>Пригласи друга и получи бесплатное открытие!</InviteHint>
       </Footer>
 
