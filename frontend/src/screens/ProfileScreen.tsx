@@ -139,6 +139,10 @@ export default function ProfileScreen() {
   const profile = useAuthStore((state) => state.profile)
   const fetchProfile = useAuthStore((state) => state.fetchProfile)
 
+
+  
+
+  const balanceText = useMemo(() => profile?.stars_withdrawable ?? 0, [profile])
   useEffect(() => {
     void fetchProfile()
   }, [fetchProfile])
@@ -207,7 +211,7 @@ export default function ProfileScreen() {
       </ProfileGrid>
 
       <BalanceBlock>
-        <p style={{ margin: 'auto', fontSize: '30px', fontWeight: '500' }}>Можно вывести - 300  <img style={{width: '25px', height: '25px'}}src={star}/></p>
+        <p style={{ margin: 'auto', fontSize: '30px', fontWeight: '500' }}>Можно вывести - {balanceText}  <img style={{width: '25px', height: '25px'}}src={star}/></p>
       </BalanceBlock>
 
       <Card>
