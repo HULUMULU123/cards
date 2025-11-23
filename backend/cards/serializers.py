@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import Card, CardTemplate, UserProfile, WithdrawRequest
+from .models import CardTemplate, CollectionCard, UserProfile, WithdrawRequest
 
 User = get_user_model()
 
@@ -39,12 +39,11 @@ class CardSerializer(serializers.ModelSerializer):
     group = serializers.SerializerMethodField()
 
     class Meta:
-        model = Card
+        model = CollectionCard
         fields = (
             'id',
             'title',
             'rarity',
-            'quantity',
             'image_url',
             'animation_url',
             'group',

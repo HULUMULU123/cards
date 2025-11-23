@@ -13,7 +13,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Card, CardGroup, CardTemplate, UserProfile, WithdrawRequest
+from .models import (
+    CardGroup,
+    CardTemplate,
+    CollectionCard,
+    UserProfile,
+    WithdrawRequest,
+)
 from .serializers import (
     CardSerializer,
     StarsInvoiceSerializer,
@@ -118,9 +124,9 @@ class ProfileView(APIView):
         profile = request.user.profile
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
-        data['cards_total'] = Card.objects.filter(user=request.user).count()
+        data['cards_total'] = CollectionCard.objects.filter(user=request.user).count()
         data['cards_groups'] = (
-            Card.objects.filter(user=request.user)
+            CollectionCard.objects.filter(user=request.user)
             .values('template__group__name')
             .annotate(count=models.Count('id'))
         )
@@ -129,7 +135,7 @@ class ProfileView(APIView):
 
 class CollectionView(APIView):
     def get(self, request, *args, **kwargs):
-        cards = Card.objects.filter(user=request.user).order_by('title')
+        cards = CollectionCard.objects.filter(user=request.user).order_by('title')
         serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response({'cards': serializer.data})
 
@@ -145,7 +151,7 @@ class CollectionView(APIView):
             return Response({'detail': 'В выбранной группе нет карточек'}, status=status.HTTP_400_BAD_REQUEST)
 
         template = random.choice(templates)
-        card, created = Card.objects.get_or_create(
+        card, _ = CollectionCard.objects.get_or_create(
             user=request.user,
             template=template,
             defaults={
@@ -155,10 +161,6 @@ class CollectionView(APIView):
                 'animation': template.animation,
             },
         )
-        if not created:
-            card.quantity = models.F('quantity') + 1
-            card.save(update_fields=['quantity'])
-            card.refresh_from_db()
 
         profile = request.user.profile
         profile.cards_opened = models.F('cards_opened') + 1
