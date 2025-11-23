@@ -81,12 +81,16 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
         digestmod=hashlib.sha256,
     ).digest()
 
+    print('settings', settings.TELEGRAM_BOT_TOKEN.encode())
+
     # Шаг 5: hash = HMAC_SHA256(secret_key, data_check_string)
     calculated_hash = hmac.new(
         key=secret_key,
         msg=data_check_string.encode(),
         digestmod=hashlib.sha256,
     ).hexdigest()
+
+    print(data_check_string.encode())
 
     # Сравнение
     if not hmac.compare_digest(calculated_hash, incoming_hash):
