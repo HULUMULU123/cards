@@ -164,7 +164,7 @@ export default function ProfileScreen() {
 
       <ProfileGrid>
         <Card $group="a">
-          <Avatar />
+          <Avatar ><img src={profile?.user?.photo_url} /></Avatar>
           <h2 style={{ margin: '0 0 0', fontSize: '24px', fontWeight: '600' }}>{formattedName}</h2>
           <Username>@{profile?.user?.username || 'tg_demo'}</Username>
         </Card>

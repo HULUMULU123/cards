@@ -8,7 +8,7 @@ import { Card } from '../types/entities'
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +16,7 @@ const Backdrop = styled.div`
 `
 
 const ModalCard = styled.div`
-  background: #130720;
+  background: #000;
   padding: 22px;
   border-radius: 18px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
@@ -55,13 +55,7 @@ export default function CardOpenModal({ card, onClose }: CardOpenModalProps) {
           style={{ width: '100%', maxWidth: 320 }}
           loop={false}
         />
-        {card.image_url && <CardImage src={card.image_url} alt={card.title} />}
-        <div>
-          <strong>{card.title}</strong>
-          <div>{card.group || card.rarity}</div>
-        </div>
-        {card.animation_url && <small>Анимация будет загружена из бэкенда</small>}
-      </ModalCard>
+        </ModalCard>
     </Backdrop>,
     document.body,
   )

@@ -12,19 +12,9 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(
             user=instance,
-            stars_balance=417,
-            stars_withdrawable=300,
-            referrals_count=38,
-            cards_opened=417,
+            stars_balance=0,
+            stars_withdrawable=0,
+            referrals_count=0,
+            cards_opened=0,
         )
-        # добавить стартовую коллекцию для демонстрации
-        CollectionCard.objects.create(
-            user=instance,
-            title='Ice Watch',
-            rarity='epic',
-        )
-        CollectionCard.objects.create(
-            user=instance,
-            title='City Lights',
-            rarity='rare',
-        )
+        
