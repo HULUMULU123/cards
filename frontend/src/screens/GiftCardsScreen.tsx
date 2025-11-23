@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import Lottie, { type LottieRefCurrentProps } from 'lottie-react'
 import styled from 'styled-components'
@@ -308,19 +309,22 @@ export default function GiftCardsScreen() {
         <InviteHint>Пригласи друга и получи бесплатное открытие!</InviteHint>
       </Footer>
 
-      {overlayPhase !== 'idle' && (
-        <Overlay $isDarkened={isDarkened} $visible={overlayPhase !== 'idle'}>
-          <AnimationWrapper>
-            <Lottie
-              lottieRef={lottieRef}
-              animationData={openingAnimation}
-              loop={false}
-              autoplay={false}
-              onComplete={() => setOverlayPhase('fadingOut')}
-            />
-          </AnimationWrapper>
-        </Overlay>
-      )}
+      {overlayPhase !== 'idle'
+        ? createPortal(
+            <Overlay $isDarkened={isDarkened} $visible={overlayPhase !== 'idle'}>
+              <AnimationWrapper>
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={openingAnimation}
+                  loop={false}
+                  autoplay={false}
+                  onComplete={() => setOverlayPhase('fadingOut')}
+                />
+              </AnimationWrapper>
+            </Overlay>,
+            document.body
+          )
+        : null}
     </Screen>
   )
 }
