@@ -194,6 +194,7 @@ export default function WithdrawScreen() {
   const openStarsInvoice = useAuthStore((state) => state.openStarsInvoice)
   const withdrawHistory = useAuthStore((state) => state.withdrawHistory)
   const fetchWithdrawHistory = useAuthStore((state) => state.fetchWithdrawHistory)
+  const fetchProfile = useAuthStore((state) => state.fetchProfile)
 
   const [amount, setAmount] = useState('')
   const [recipient, setRecipient] = useState('')
@@ -202,7 +203,8 @@ export default function WithdrawScreen() {
 
   useEffect(() => {
     void fetchWithdrawHistory()
-  }, [fetchWithdrawHistory])
+    void fetchProfile()
+  }, [fetchWithdrawHistory, fetchProfile])
 
   const handleQuickSelect = (value: number | 'all') => {
     if (value === 'all') {
