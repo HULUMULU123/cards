@@ -14,6 +14,7 @@ export interface UserProfile {
   referrals_count: number
   cards_opened: number
   cards_total: number
+  card_open_price?: number
   referral_code: string
   referral_link?: string
   cards_groups?: { template__group__name: string; count: number }[]

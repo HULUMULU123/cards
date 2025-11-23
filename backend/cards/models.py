@@ -95,6 +95,19 @@ class CardTemplate(models.Model):
         return self.title
 
 
+class CardSettings(models.Model):
+    open_price = models.PositiveIntegerField(
+        default=0, verbose_name='Стоимость открытия карточки в звёздах'
+    )
+
+    class Meta:
+        verbose_name = 'Настройки карточек'
+        verbose_name_plural = 'Настройки карточек'
+
+    def __str__(self):
+        return f"Стоимость открытия: {self.open_price}"
+
+
 class CollectionCard(models.Model):
     RARITY_CHOICES = (
         ('common', 'Обычная'),

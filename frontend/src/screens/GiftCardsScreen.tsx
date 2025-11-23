@@ -140,9 +140,14 @@ const ActionsRow = styled.div`
 
 export default function GiftCardsScreen() {
   const navigate = useNavigate()
-  const { profile, openCardFromGroup, fetchProfile } = useAuthStore()
+  const { profile, openCardFromGroup, fetchProfile, error, setError } = useAuthStore()
   const [openedCard, setOpenedCard] = useState<Card | null>(null)
   const [opening, setOpening] = useState(false)
+
+  const price = profile?.card_open_price ?? 0
+  const balance = profile?.stars_balance ?? 0
+  const canAfford = balance >= price
+  const buttonLabel = opening ? 'Открываем...' : price > 0 ? `Открыть за ${price}⭐` : 'Открыть'
 
   useEffect(() => {
     void fetchProfile()
@@ -156,12 +161,17 @@ export default function GiftCardsScreen() {
 
   const handleOpenCard = async () => {
     if (opening) return
+    setError(null)
     setOpening(true)
     try {
       const card = await openCardFromGroup()
       if (card) {
         setOpenedCard(card)
       }
+    } catch (openError) {
+      const message = openError instanceof Error ? openError.message : 'Не удалось открыть карточку'
+      setError(message)
+      alert(message)
     } finally {
       setOpening(false)
     }
@@ -171,8 +181,10 @@ export default function GiftCardsScreen() {
     <Screen>
       <Header>
         <ReferralBadge link={profile?.referral_link} onCopy={handleCopyReferral} />
-        <BalancePill value={profile?.telegram_stars_balance}  />
+        <BalancePill value={balance}  />
       </Header>
+
+      {error && <CardSubtitle style={{ color: '#ffbcbc' }}>{error}</CardSubtitle>}
 
       
 
@@ -181,9 +193,12 @@ export default function GiftCardsScreen() {
           <CardImage src={giftPack} alt="pack" />
           <CardTitle>Откройте набор карт</CardTitle>
           <CardSubtitle>Каждая группа имеет свой шанс выпадения</CardSubtitle>
-          <OpenButton onClick={handleOpenCard} disabled={opening}>
-            {opening ? 'Открываем...' : 'Открыть'}
+          <OpenButton onClick={handleOpenCard} disabled={opening || !canAfford}>
+            {canAfford ? buttonLabel : 'Недостаточно звёзд'}
           </OpenButton>
+          {!canAfford && price > 0 && (
+            <CardSubtitle>Пополните баланс, чтобы открыть карточку</CardSubtitle>
+          )}
         </CardWrapper>
       </CardContainer>
 

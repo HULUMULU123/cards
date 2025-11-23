@@ -202,7 +202,7 @@ export default function ProfileScreen() {
               fontWeight: '600',
             }}
           >
-            {profile?.cards_total ?? 0}
+            {opened}
           </span>
           <span style={{ fontSize: '12px', color: 'rgb(204,	186,	207)', }}>
             В коллекции

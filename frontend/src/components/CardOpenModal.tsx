@@ -1,14 +1,16 @@
 import { createPortal } from 'react-dom'
 import Lottie, { type LottieRefCurrentProps } from 'lottie-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import openingAnimation from '../assets/animations/card-opening.json'
 import { Card } from '../types/entities'
 
-const Backdrop = styled.div`
+const Backdrop = styled.div<{ $visible: boolean }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 1);
+  background: rgba(0, 0, 0, 0.9);
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transition: opacity 0.5s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,12 +30,6 @@ const ModalCard = styled.div`
   text-align: center;
 `
 
-const CardImage = styled.img`
-  width: 80%;
-  max-width: 280px;
-  filter: drop-shadow(0 24px 32px rgba(0, 0, 0, 0.45));
-`
-
 interface CardOpenModalProps {
   card: Card
   onClose: () => void
@@ -41,21 +37,33 @@ interface CardOpenModalProps {
 
 export default function CardOpenModal({ card, onClose }: CardOpenModalProps) {
   const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const [visible, setVisible] = useState(false)
+  const closingRef = useRef(false)
 
   useEffect(() => {
+    closingRef.current = false
+    setVisible(true)
     lottieRef.current?.goToAndPlay(0, true)
   }, [card])
 
+  const handleClose = () => {
+    if (closingRef.current) return
+    closingRef.current = true
+    setVisible(false)
+    setTimeout(onClose, 500)
+  }
+
   return createPortal(
-    <Backdrop onClick={onClose}>
+    <Backdrop onClick={handleClose} $visible={visible}>
       <ModalCard onClick={(e) => e.stopPropagation()}>
         <Lottie
           lottieRef={lottieRef}
           animationData={openingAnimation}
           style={{ width: '100%', maxWidth: 320 }}
           loop={false}
+          onComplete={handleClose}
         />
-        </ModalCard>
+      </ModalCard>
     </Backdrop>,
     document.body,
   )

@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
     CardGroup,
+    CardSettings,
     CardTemplate,
     CollectionCard,
     UserProfile,
@@ -179,12 +180,15 @@ class ProfileView(APIView):
         profile = request.user.profile
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
-        data['cards_total'] = CollectionCard.objects.filter(user=request.user).count()
+        data['cards_opened'] = CollectionCard.objects.filter(user=request.user).count()
+        data['cards_total'] = CardTemplate.objects.count()
         data['cards_groups'] = (
             CollectionCard.objects.filter(user=request.user)
             .values('template__group__name')
             .annotate(count=models.Count('id'))
         )
+        settings_instance = CardSettings.objects.first()
+        data['card_open_price'] = settings_instance.open_price if settings_instance else 0
         return Response(data)
 
 
@@ -200,6 +204,15 @@ class CollectionView(APIView):
             return Response({'detail': 'Группы карточек не настроены'}, status=status.HTTP_400_BAD_REQUEST)
         weights = [group.drop_chance for group in groups]
         selected_group = random.choices(groups, weights=weights, k=1)[0]
+
+        settings_instance = CardSettings.objects.first()
+        if not settings_instance:
+            settings_instance = CardSettings.objects.create()
+
+        profile = request.user.profile
+        price = settings_instance.open_price
+        if profile.stars_balance < price:
+            return Response({'detail': 'Недостаточно звёзд для открытия карточки'}, status=status.HTTP_400_BAD_REQUEST)
 
         templates = list(selected_group.templates.all())
         if not templates:
@@ -217,13 +230,13 @@ class CollectionView(APIView):
             },
         )
 
-        profile = request.user.profile
         profile.cards_opened = models.F('cards_opened') + 1
-        profile.save(update_fields=['cards_opened'])
+        profile.stars_balance = models.F('stars_balance') - price
+        profile.save(update_fields=['cards_opened', 'stars_balance'])
         profile.refresh_from_db()
 
         serializer = CardSerializer(card, context={'request': request})
-        return Response({'card': serializer.data, 'group': selected_group.name})
+        return Response({'card': serializer.data, 'group': selected_group.name, 'price': price})
 
 
 class WithdrawView(APIView):

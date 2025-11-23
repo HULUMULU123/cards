@@ -31,6 +31,7 @@ const fallbackUser: UserProfile = {
   referrals_count: 38,
   cards_opened: 70,
   cards_total: 12,
+  card_open_price: 0,
   referral_code: 'demo',
 }
 
@@ -58,6 +59,7 @@ interface AuthState {
 
 interface AuthActions {
   setToken: (token: string | null) => void
+  setError: (message: string | null) => void
   initialize: (telegram?: typeof window.Telegram.WebApp | null) => Promise<void>
   refreshAll: () => Promise<void>
   fetchProfile: () => Promise<void>
@@ -78,6 +80,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   appReady: false,
 
   setToken: (token) => set({ token }),
+  setError: (message) => set({ error: message }),
 
   initialize: async (telegramInstance) => {
     const { token, appReady } = get()
@@ -182,13 +185,19 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   openCardFromGroup: async () => {
     const { token } = get()
     if (!token) return null
-    const result = await openCardApi(token)
-    if (result?.card) {
-      await get().fetchCollection()
-      await get().fetchProfile()
-      return result.card
+    try {
+      const result = await openCardApi(token)
+      if (result?.card) {
+        await get().fetchCollection()
+        await get().fetchProfile()
+        return result.card
+      }
+      return null
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Не удалось открыть карточку'
+      set({ error: message })
+      throw error
     }
-    return null
   },
 
   openStarsInvoice: async (amount) => {
