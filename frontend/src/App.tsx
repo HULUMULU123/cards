@@ -21,7 +21,7 @@ const AppShell = styled.div`
   padding: 16px;
   background: #0b0117;
   overflow: hidden;
- 
+  padding-bottom:30px;
 
 
   /* Фиолетовые круги */
