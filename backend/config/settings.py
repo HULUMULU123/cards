@@ -79,7 +79,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'ru-ru'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
@@ -126,6 +126,16 @@ JAZZMIN_SETTINGS = {
     'site_header': 'Карточки',
     'site_brand': 'Панель управления',
     'welcome_sign': 'Добро пожаловать в панель управления карточками',
+    'icons': {
+        'auth.user': 'fas fa-user',
+        'auth.group': 'fas fa-users',
+        'cards.UserProfile': 'fas fa-id-badge',
+        'cards.CardGroup': 'fas fa-layer-group',
+        'cards.CardTemplate': 'fas fa-clone',
+        'cards.CollectionCard': 'fas fa-cards',
+        'cards.CardSettings': 'fas fa-cog',
+        'cards.WithdrawRequest': 'fas fa-exchange-alt',
+    },
 }
 
 # TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', 'telegram-bot-token')

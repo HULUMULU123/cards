@@ -118,6 +118,24 @@ def fetch_external_balance(user_id: str) -> Optional[int]:
         return None
 
 
+def debit_external_balance(user_id: str, amount: int, reason: str = 'open_card') -> Optional[int]:
+    token = getattr(settings, 'BALANCE_API_TOKEN', '')
+    base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
+    if not token or not base_url or not user_id or amount <= 0:
+        return None
+    url = f"{base_url.rstrip('/')}/debit"
+    headers = {'Authorization': f"Bearer {token}", 'Content-Type': 'application/json'}
+    payload = {'user_id': int(user_id), 'amount': amount, 'reason': reason}
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=5)
+        if response.status_code != 200:
+            return None
+        payload = response.json()
+        return int(payload.get('balance', 0))
+    except (requests.RequestException, ValueError, TypeError):
+        return None
+
+
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -258,6 +276,22 @@ class CollectionView(APIView):
             settings_instance = CardSettings.objects.create()
 
         price = settings_instance.open_price
+        profile_base = request.user.profile
+        telegram_id = profile_base.telegram_id
+
+        external_balance = None
+        if price > 0:
+            if not telegram_id:
+                return Response(
+                    {'detail': 'Не удалось подтвердить Telegram баланс пользователя'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            external_balance = debit_external_balance(telegram_id, price, reason='open_card')
+            if external_balance is None:
+                return Response(
+                    {'detail': 'Недостаточно звёзд на Telegram балансе'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         templates = list(selected_group.templates.all())
         if not templates:
@@ -310,7 +344,11 @@ class CollectionView(APIView):
             profile.cards_opened = models.F('cards_opened') + 1
             profile.stars_balance = models.F('stars_balance') - price + reward_amount
             profile.stars_withdrawable = models.F('stars_withdrawable') + reward_amount
-            profile.save(update_fields=['cards_opened', 'stars_balance', 'stars_withdrawable'])
+            update_fields = ['cards_opened', 'stars_balance', 'stars_withdrawable']
+            if external_balance is not None:
+                profile.telegram_stars_balance = external_balance
+                update_fields.append('telegram_stars_balance')
+            profile.save(update_fields=update_fields)
             profile.refresh_from_db()
 
         serializer = CardSerializer(card, context={'request': request})

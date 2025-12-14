@@ -245,9 +245,7 @@ export default function ProfileScreen() {
           <ReferralLink>
             <span>{profile?.referral_link || 'https://t.me/example?start=ref'}</span>
           </ReferralLink>
-          <ShareHint>
-            Откроется список чатов, куда можно отправить ссылку с текстом «Испытай свою удачу!(Первое открытие должно быть бесплатным)».
-          </ShareHint>
+          
         </ReferralBlock>
       </Card>
       <SecondaryText>
