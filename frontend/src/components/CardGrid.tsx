@@ -5,7 +5,7 @@ import starIcon from '../assets/icons/star.svg'
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
   width: 100%;
   justify-items: center;
@@ -14,7 +14,7 @@ const Grid = styled.div`
 const CardSlot = styled.div<{ $placeholder?: boolean }>`
   position: relative;
   width: 100%;
-  max-width: 160px;
+  max-width: 180px;
   border-radius: 24px;
   overflow: hidden;
   aspect-ratio: 3 / 5;

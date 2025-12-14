@@ -106,7 +106,7 @@ def fetch_external_balance(user_id: str) -> Optional[int]:
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not token or not base_url or not user_id:
         return None
-    url = f"{base_url.rstrip('/')}/balance/{user_id}"
+    url = f"{base_url.rstrip('/')}/{user_id}"
     headers = {'Authorization': f"Bearer {token}"}
     try:
         response = requests.get(url, headers=headers, timeout=5)
