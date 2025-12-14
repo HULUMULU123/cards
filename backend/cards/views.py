@@ -154,12 +154,29 @@ class TelegramAuthView(APIView):
         start_param = parsed_data.get('start_param') or parsed_data.get('start')
         if start_param and start_param.startswith('ref_') and not profile.referred_by:
             referral_code = start_param.replace('ref_', '', 1)
-            inviter_profile = UserProfile.objects.filter(referral_code=referral_code).first()
-            if inviter_profile and inviter_profile != profile:
-                profile.referred_by = inviter_profile
-                updated_fields.append('referred_by')
-                inviter_profile.referrals_count = models.F('referrals_count') + 1
-                inviter_profile.save(update_fields=['referrals_count'])
+            with transaction.atomic():
+                inviter_profile = (
+                    UserProfile.objects.select_for_update()
+                    .filter(referral_code=referral_code)
+                    .first()
+                )
+                if inviter_profile and inviter_profile != profile:
+                    profile.referred_by = inviter_profile
+                    updated_fields.append('referred_by')
+                    inviter_profile.referrals_count = models.F('referrals_count') + 1
+                    reward = 0
+                    settings_instance = CardSettings.objects.first()
+                    if settings_instance:
+                        reward = settings_instance.referral_reward
+                    if reward:
+                        inviter_profile.stars_balance = models.F('stars_balance') + reward
+                        inviter_profile.stars_withdrawable = models.F('stars_withdrawable') + reward
+                        inviter_profile.save(
+                            update_fields=['referrals_count', 'stars_balance', 'stars_withdrawable']
+                        )
+                    else:
+                        inviter_profile.save(update_fields=['referrals_count'])
+                    inviter_profile.refresh_from_db()
 
         if updated_fields:
             profile.save(update_fields=updated_fields)
@@ -181,7 +198,7 @@ class ProfileView(APIView):
         profile = request.user.profile
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
-        data['cards_opened'] = profile.cards_opened
+        data['cards_opened'] = CollectionCard.objects.filter(user=request.user).count()
         data['cards_total'] = CardTemplate.objects.count()
         data['cards_groups'] = (
             CollectionCard.objects.filter(user=request.user)
@@ -273,7 +290,8 @@ class WithdrawView(APIView):
             profile = request.user.profile
             amount = serializer.validated_data['stars_amount']
             profile.stars_withdrawable -= amount
-            profile.save(update_fields=['stars_withdrawable'])
+            profile.stars_balance = models.F('stars_balance') - amount
+            profile.save(update_fields=['stars_withdrawable', 'stars_balance'])
             withdraw = WithdrawRequest.objects.create(
                 user=request.user,
                 stars_amount=amount,

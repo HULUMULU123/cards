@@ -87,8 +87,9 @@ class WithdrawCreateSerializer(serializers.Serializer):
         user = self.context['request'].user
         profile = user.profile
         amount = attrs['stars_amount']
-        if amount > profile.stars_withdrawable:
-            raise serializers.ValidationError('Недостаточно доступных звёзд для вывода')
+        available = min(profile.stars_withdrawable, profile.stars_balance)
+        if amount > available:
+            raise serializers.ValidationError('Недостаточно звёзд для вывода')
         return attrs
 
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import queryClient from '../lib/queryClient'
 
 import {
   authorizeWithTelegram,
@@ -130,14 +131,18 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await fetchProfileApi(token)
+      const data = await queryClient.fetchQuery({
+        queryKey: ['profile', token],
+        queryFn: () => fetchProfileApi(token),
+        staleTime: 60_000,
+      })
       if (data) {
         const currentPhoto = get().profile?.user?.photo_url
         const profile = data.user
           ? { ...data, user: { ...data.user, photo_url: data.user.photo_url ?? currentPhoto } }
           : data
-
         set({ profile })
+        queryClient.setQueryData(['profile', token], profile)
       }
     } catch (error) {
       console.error('Failed to fetch profile', error)
@@ -148,9 +153,14 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await fetchCollectionApi(token)
+      const data = await queryClient.fetchQuery({
+        queryKey: ['collection', token],
+        queryFn: () => fetchCollectionApi(token),
+        staleTime: 60_000,
+      })
       if (data?.cards) {
         set({ collection: data.cards })
+        queryClient.setQueryData(['collection', token], data)
       }
     } catch (error) {
       console.error('Failed to fetch collection', error)
@@ -161,9 +171,14 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     const { token } = get()
     if (!token) return
     try {
-      const data = await fetchWithdrawHistoryApi(token)
+      const data = await queryClient.fetchQuery({
+        queryKey: ['withdrawHistory', token],
+        queryFn: () => fetchWithdrawHistoryApi(token),
+        staleTime: 60_000,
+      })
       if (data?.history) {
         set({ withdrawHistory: data.history })
+        queryClient.setQueryData(['withdrawHistory', token], data)
       }
     } catch (error) {
       console.error('Failed to fetch withdraw history', error)
@@ -197,6 +212,10 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     try {
       const result = await openCardApi(token)
       if (result?.card) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['collection', token] }),
+          queryClient.invalidateQueries({ queryKey: ['profile', token] }),
+        ])
         await get().fetchCollection()
         await get().fetchProfile()
         return result.card

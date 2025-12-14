@@ -100,6 +100,9 @@ class CardSettings(models.Model):
     open_price = models.PositiveIntegerField(
         default=0, verbose_name='Стоимость открытия карточки в звёздах'
     )
+    referral_reward = models.PositiveIntegerField(
+        default=0, verbose_name='Награда за привлечённого пользователя (звёзды)'
+    )
 
     class Meta:
         verbose_name = 'Настройки карточек'

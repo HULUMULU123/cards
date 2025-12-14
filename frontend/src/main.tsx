@@ -2,9 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { ThemeProvider, createGlobalStyle } from 'styled-components'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 import App from './App'
 import theme from './styles/theme'
+import queryClient from './lib/queryClient'
 
 const GlobalStyle = createGlobalStyle`
   :root {
@@ -32,8 +34,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <HashRouter>
-        <GlobalStyle />
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <GlobalStyle />
+          <App />
+        </QueryClientProvider>
       </HashRouter>
     </ThemeProvider>
   </React.StrictMode>,
