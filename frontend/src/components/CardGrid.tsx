@@ -8,6 +8,7 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   width: 100%;
+  align-items: stretch;
 `
 
 const CardSlot = styled.div<{ $placeholder?: boolean }>`
@@ -91,12 +92,12 @@ const Fallback = styled.div`
 
 const Row = styled.div<{ $accent?: string }>`
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: stretch;
   width: 100%;
   border-radius: 18px;
-  padding: 12px;
+  padding: 14px;
   background: ${({ $accent }) =>
     $accent
       ? `linear-gradient(120deg, rgba(0,0,0,0.2), ${$accent}22)`
@@ -106,9 +107,12 @@ const Row = styled.div<{ $accent?: string }>`
 
 const RewardBadge = styled.div<{ $accent?: string }>`
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 12px;
+  min-width: 92px;
+  padding: 12px 10px;
   border-radius: 14px;
   background: ${({ $accent }) =>
     $accent
@@ -118,7 +122,8 @@ const RewardBadge = styled.div<{ $accent?: string }>`
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
-  align-self: center;
+  align-self: stretch;
+  text-align: center;
 `
 
 const GroupTitle = styled.div`
@@ -157,6 +162,10 @@ export default function CardGrid({
         <span style={{ opacity: 0.7, fontSize: 12 }}>Рейтинг: {groupRating ?? '—'}</span>
       </GroupTitle>
       <Row $accent={groupColor}>
+        <RewardBadge $accent={groupColor}>
+          <img src={starIcon} alt="star" width={16} height={16} />
+          <span>{groupReward ?? 0}</span>
+        </RewardBadge>
         <Grid>
           {slots.map((card, index) => {
             if (!card) {
@@ -178,10 +187,6 @@ export default function CardGrid({
             )
           })}
         </Grid>
-        <RewardBadge $accent={groupColor}>
-          <img src={starIcon} alt="star" width={16} height={16} />
-          <span>{groupReward ?? 0}</span>
-        </RewardBadge>
       </Row>
     </div>
   )
