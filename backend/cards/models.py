@@ -52,6 +52,15 @@ class CardGroup(models.Model):
     drop_chance = models.FloatField(
         default=0.0, help_text='Шанс выпадения (0-1)', verbose_name='Шанс выпадения'
     )
+    color = models.CharField(
+        max_length=16, default='#000000', verbose_name='Цвет группы (hex)'
+    )
+    rating = models.FloatField(
+        default=1.0, help_text='Рейтинг группы (0.5 - 10)', verbose_name='Рейтинг'
+    )
+    row_reward = models.PositiveIntegerField(
+        default=0, verbose_name='Награда за собранный ряд'
+    )
 
     class Meta:
         verbose_name = 'Группа карточек'

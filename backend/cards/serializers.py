@@ -70,7 +70,16 @@ class CardSerializer(serializers.ModelSerializer):
         return url
 
     def get_group(self, obj):
-        return obj.template.group.name if obj.template and obj.template.group else None
+        if not obj.template or not obj.template.group:
+            return None
+        group = obj.template.group
+        return {
+            'name': group.name,
+            'color': group.color,
+            'rating': group.rating,
+            'drop_chance': group.drop_chance,
+            'row_reward': group.row_reward,
+        }
 
 
 class WithdrawRequestSerializer(serializers.ModelSerializer):

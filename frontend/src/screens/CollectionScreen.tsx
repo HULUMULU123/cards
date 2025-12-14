@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+import { useNavigate } from 'react-router-dom'
 
 import CardGrid from '../components/CardGrid'
 import useAuthStore from '../store/useAuthStore'
+import ReferralBadge from '../components/ReferralBadge'
 
 const Screen = styled.section`
   display: flex;
@@ -44,17 +46,60 @@ const EmptyState = styled.div`
 export default function CollectionScreen() {
   const cards = useAuthStore((state) => state.collection)
   const fetchCollection = useAuthStore((state) => state.fetchCollection)
+  const profile = useAuthStore((state) => state.profile)
+  const navigate = useNavigate()
 
   useEffect(() => {
     void fetchCollection()
   }, [fetchCollection])
 
+  const grouped = useMemo(() => {
+    const map = new Map<
+      string,
+      { cards: typeof cards; color?: string; rating?: number; reward?: number }
+    >()
+    cards.forEach((card) => {
+      const key = card.group?.name || 'Без группы'
+      if (!map.has(key)) {
+        map.set(key, {
+          cards: [],
+          color: card.group?.color,
+          rating: card.group?.rating,
+          reward: card.group?.row_reward,
+        })
+      }
+      map.get(key)!.cards.push(card)
+    })
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, ...value }))
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+  }, [cards])
+
+  const handleReferral = () => navigate('/profile')
+
   return (
     <Screen>
       <Heading>Коллекция</Heading>
       <Container>
-        <Subtitle>Все карточки под рукой. Проверь, что выпало.</Subtitle>
-        {cards.length > 0 ? <CardGrid cards={cards} /> : <EmptyState>Карточек пока нет</EmptyState>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Subtitle>Все карточки под рукой. Проверь, что выпало.</Subtitle>
+          <ReferralBadge link={profile?.referral_link} onCopy={handleReferral} />
+        </div>
+        {grouped.length > 0 ? (
+          grouped.map((group) => (
+            <div key={group.name} style={{ marginBottom: 18 }}>
+              <CardGrid
+                cards={group.cards}
+                groupName={group.name}
+                groupColor={group.color}
+                groupRating={group.rating}
+                groupReward={group.reward}
+              />
+            </div>
+          ))
+        ) : (
+          <EmptyState>Карточек пока нет</EmptyState>
+        )}
       </Container>
     </Screen>
   )

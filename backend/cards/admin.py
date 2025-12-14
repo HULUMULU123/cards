@@ -46,7 +46,7 @@ class CardGroupAdmin(admin.ModelAdmin):
     list_display = [field.name for field in CardGroup._meta.fields]
     list_filter = ('name',)
     search_fields = ('name',)
-    list_editable = ('drop_chance',)
+    list_editable = ('drop_chance', 'color', 'rating', 'row_reward')
 
 
 @admin.register(CardSettings)

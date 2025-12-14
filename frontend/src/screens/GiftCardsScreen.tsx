@@ -146,6 +146,7 @@ export default function GiftCardsScreen() {
 
   const price = profile?.card_open_price ?? 0
   const balance = profile?.stars_balance ?? 0
+  const tgBalance = profile?.telegram_stars_balance ?? balance
   const canAfford = balance >= price
   const buttonLabel = opening ? 'Открываем...' : price > 0 ? `Открыть за ${price}⭐` : 'Открыть'
 
@@ -153,10 +154,8 @@ export default function GiftCardsScreen() {
     void fetchProfile()
   }, [fetchProfile])
 
-  const handleCopyReferral = () => {
-    if (profile?.referral_link) {
-      navigator.clipboard.writeText(profile.referral_link).catch(() => {})
-    }
+  const handleReferralClick = () => {
+    navigate('/profile')
   }
 
   const handleOpenCard = async () => {
@@ -180,8 +179,8 @@ export default function GiftCardsScreen() {
   return (
     <Screen>
       <Header>
-        <ReferralBadge link={profile?.referral_link} onCopy={handleCopyReferral} />
-        <BalancePill value={balance}  />
+        <ReferralBadge link={profile?.referral_link} onCopy={handleReferralClick} />
+        <BalancePill value={tgBalance}  />
       </Header>
 
       {error && <CardSubtitle style={{ color: '#ffbcbc' }}>{error}</CardSubtitle>}

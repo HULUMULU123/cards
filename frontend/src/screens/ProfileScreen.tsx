@@ -95,6 +95,11 @@ const CopyButton = styled.button`
   margin-left: auto;
 `
 
+const ShareHint = styled.span`
+  color: rgb(204, 186, 207);
+  font-size: 12px;
+`
+
 const SecondaryText = styled.p`
   color: rgb(204,	186,	207);
   margin: 0;
@@ -161,7 +166,14 @@ export default function ProfileScreen() {
 
   const handleCopy = () => {
     if (!profile?.referral_link) return
-    void navigator.clipboard.writeText(profile.referral_link)
+    const telegram = window.Telegram?.WebApp
+    const message = `${profile.referral_link}\nИспытай свою удачу!(Первое открытие должно быть бесплатным)`
+    if (telegram?.openTelegramLink) {
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(profile.referral_link)}&text=${encodeURIComponent(message)}`
+      telegram.openTelegramLink(shareUrl)
+    } else {
+      void navigator.clipboard.writeText(message)
+    }
   }
 
   const opened = profile?.cards_opened ?? 0
@@ -177,6 +189,7 @@ export default function ProfileScreen() {
           <Avatar ><img src={profile?.user?.photo_url} /></Avatar>
           <h2 style={{ margin: '0 0 0', fontSize: '24px', fontWeight: '600' }}>{formattedName}</h2>
           <Username>@{profile?.user?.username || 'tg_demo'}</Username>
+          <ShareHint>Поделитесь ссылкой и получите бонусы</ShareHint>
         </Card>
 
         <Card $group="b">
@@ -227,11 +240,14 @@ export default function ProfileScreen() {
               <img src={reffreal} style={{width:'15px', height: '15px', filter: 'brightness(0) invert(1)'}}/>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '500' }}>REFERRAL LINK</h3>
             </div>
-            <CopyButton onClick={handleCopy}>COPY</CopyButton>
+            <CopyButton onClick={handleCopy}>Поделиться</CopyButton>
           </div>
           <ReferralLink>
             <span>{profile?.referral_link || 'https://t.me/example?start=ref'}</span>
           </ReferralLink>
+          <ShareHint>
+            Откроется список чатов, куда можно отправить ссылку с текстом «Испытай свою удачу!(Первое открытие должно быть бесплатным)».
+          </ShareHint>
         </ReferralBlock>
       </Card>
       <SecondaryText>

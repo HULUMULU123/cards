@@ -27,7 +27,13 @@ export interface Card {
   quantity: number
   image_url?: string
   animation_url?: string
-  group?: string | null
+  group?: {
+    name: string
+    color?: string
+    rating?: number
+    drop_chance?: number
+    row_reward?: number
+  } | null
 }
 
 export interface WithdrawRequest {
