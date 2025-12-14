@@ -8,7 +8,6 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   width: 100%;
-  align-items: stretch;
 `
 
 const CardSlot = styled.div<{ $placeholder?: boolean }>`
@@ -92,12 +91,12 @@ const Fallback = styled.div`
 
 const Row = styled.div<{ $accent?: string }>`
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
   width: 100%;
   border-radius: 18px;
-  padding: 14px;
+  padding: 12px;
   background: ${({ $accent }) =>
     $accent
       ? `linear-gradient(120deg, rgba(0,0,0,0.2), ${$accent}22)`
@@ -107,12 +106,9 @@ const Row = styled.div<{ $accent?: string }>`
 
 const RewardBadge = styled.div<{ $accent?: string }>`
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  min-width: 92px;
-  padding: 12px 10px;
+  padding: 10px 12px;
   border-radius: 14px;
   background: ${({ $accent }) =>
     $accent
@@ -122,17 +118,26 @@ const RewardBadge = styled.div<{ $accent?: string }>`
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
-  align-self: stretch;
-  text-align: center;
+  align-self: center;
 `
 
 const GroupTitle = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 10px;
   font-weight: 700;
+  flex-wrap: wrap;
+`
+
+const GroupMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  opacity: 0.8;
 `
 
 interface CardGridProps {
@@ -159,13 +164,15 @@ export default function CardGrid({
     <div style={{ width: '100%' }}>
       <GroupTitle>
         <span>{groupName}</span>
-        <span style={{ opacity: 0.7, fontSize: 12 }}>Рейтинг: {groupRating ?? '—'}</span>
+        <GroupMeta>
+          <span>Рейтинг: {groupRating ?? '—'}</span>
+          <RewardBadge $accent={groupColor}>
+            <img src={starIcon} alt="star" width={16} height={16} />
+            <span>{groupReward ?? 0}</span>
+          </RewardBadge>
+        </GroupMeta>
       </GroupTitle>
       <Row $accent={groupColor}>
-        <RewardBadge $accent={groupColor}>
-          <img src={starIcon} alt="star" width={16} height={16} />
-          <span>{groupReward ?? 0}</span>
-        </RewardBadge>
         <Grid>
           {slots.map((card, index) => {
             if (!card) {
