@@ -8,6 +8,7 @@ User = get_user_model()
 
 class TelegramAuthSerializer(serializers.Serializer):
     init_data = serializers.CharField()
+    stars = serializers.IntegerField(required=False, allow_null=True)
 
 
 class UserSerializer(serializers.ModelSerializer):

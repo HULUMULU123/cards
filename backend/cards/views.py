@@ -143,6 +143,8 @@ class TelegramAuthView(APIView):
             updated_fields.append('telegram_id')
 
         stars_balance = parsed_data.get('tg_web_app_star_count') or parsed_data.get('stars', 0)
+        if not stars_balance:
+            stars_balance = serializer.validated_data.get('stars')
         try:
             stars_balance_value = int(stars_balance)
         except (TypeError, ValueError):

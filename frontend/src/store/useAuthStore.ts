@@ -95,6 +95,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       }
       const telegram = telegramInstance || window.Telegram?.WebApp
         if (telegram?.initData) {
+          console.log('Telegram initDataUnsafe stars:', telegram.initDataUnsafe?.tg_web_app_star_count, 'initDataUnsafe:', telegram.initDataUnsafe)
           try {
           const starsBalance = telegram.initDataUnsafe?.tg_web_app_star_count
 
