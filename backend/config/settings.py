@@ -134,5 +134,5 @@ TELEGRAM_PAYMENT_PROVIDER_TOKEN = os.environ.get('TELEGRAM_PAYMENT_PROVIDER_TOKE
 TELEGRAM_BOT_NAME = os.environ.get('TELEGRAM_BOT_NAME', 'cards129_bot')
 
 # Внешний сервис баланса (FastAPI)
-BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'http://localhost:8000')
-BALANCE_API_TOKEN = os.environ.get('BALANCE_API_TOKEN', '')
+BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'https://roodensky.online/balance')
+BALANCE_API_TOKEN = os.environ.get('BALANCE_API_TOKEN', 'supersecret')
