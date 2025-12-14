@@ -49,10 +49,7 @@ const Quantity = styled.div`
 const Title = styled.span`
   font-weight: 700;
   letter-spacing: 0.5px;
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: none;
 `
 
 const BGImage = styled.img`
