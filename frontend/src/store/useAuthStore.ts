@@ -136,6 +136,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         queryFn: () => fetchProfileApi(token),
         staleTime: 60_000,
       })
+      console.log('Profile response with stars balance:', data)
       if (data) {
         const currentPhoto = get().profile?.user?.photo_url
         const profile = data.user
