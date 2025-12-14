@@ -45,6 +45,7 @@ class CardSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'rarity',
+            'quantity',
             'image_url',
             'animation_url',
             'group',

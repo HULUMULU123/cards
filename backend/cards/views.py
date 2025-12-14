@@ -181,12 +181,12 @@ class ProfileView(APIView):
         profile = request.user.profile
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
-        data['cards_opened'] = CollectionCard.objects.filter(user=request.user).count()
+        data['cards_opened'] = profile.cards_opened
         data['cards_total'] = CardTemplate.objects.count()
         data['cards_groups'] = (
             CollectionCard.objects.filter(user=request.user)
             .values('template__group__name')
-            .annotate(count=models.Count('id'))
+            .annotate(count=models.Sum('quantity'))
         )
         settings_instance = CardSettings.objects.first()
         data['card_open_price'] = settings_instance.open_price if settings_instance else 0
@@ -195,7 +195,11 @@ class ProfileView(APIView):
 
 class CollectionView(APIView):
     def get(self, request, *args, **kwargs):
-        cards = CollectionCard.objects.filter(user=request.user).order_by('title')
+        cards = (
+            CollectionCard.objects.filter(user=request.user)
+            .select_related('template', 'template__group')
+            .order_by('title')
+        )
         serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response({'cards': serializer.data})
 
@@ -203,38 +207,54 @@ class CollectionView(APIView):
         groups = list(CardGroup.objects.all())
         if not groups:
             return Response({'detail': 'Группы карточек не настроены'}, status=status.HTTP_400_BAD_REQUEST)
-        weights = [group.drop_chance for group in groups]
-        selected_group = random.choices(groups, weights=weights, k=1)[0]
+        weighted_groups = [(group, max(group.drop_chance, 0.0)) for group in groups]
+        non_zero = [(group, weight) for group, weight in weighted_groups if weight > 0]
+        if non_zero:
+            groups_pool, weights = zip(*non_zero)
+        else:
+            groups_pool, weights = groups, [1 for _ in groups]  # равные шансы, если веса не заданы
+        selected_group = random.choices(groups_pool, weights=weights, k=1)[0]
 
         settings_instance = CardSettings.objects.first()
         if not settings_instance:
             settings_instance = CardSettings.objects.create()
 
-        profile = request.user.profile
         price = settings_instance.open_price
-        if profile.stars_balance < price:
-            return Response({'detail': 'Недостаточно звёзд для открытия карточки'}, status=status.HTTP_400_BAD_REQUEST)
 
         templates = list(selected_group.templates.all())
         if not templates:
             return Response({'detail': 'В выбранной группе нет карточек'}, status=status.HTTP_400_BAD_REQUEST)
 
         template = random.choice(templates)
-        card, _ = CollectionCard.objects.get_or_create(
-            user=request.user,
-            template=template,
-            defaults={
-                'title': template.title,
-                'rarity': template.rarity,
-                'image': template.image,
-                'animation': template.animation,
-            },
-        )
 
-        profile.cards_opened = models.F('cards_opened') + 1
-        profile.stars_balance = models.F('stars_balance') - price
-        profile.save(update_fields=['cards_opened', 'stars_balance'])
-        profile.refresh_from_db()
+        with transaction.atomic():
+            profile = UserProfile.objects.select_for_update().get(user=request.user)
+            if profile.stars_balance < price:
+                return Response(
+                    {'detail': 'Недостаточно звёзд для открытия карточки'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            card, created = CollectionCard.objects.select_for_update().get_or_create(
+                user=request.user,
+                template=template,
+                defaults={
+                    'title': template.title,
+                    'rarity': template.rarity,
+                    'image': template.image,
+                    'animation': template.animation,
+                },
+            )
+            if not created:
+                CollectionCard.objects.filter(pk=card.pk).update(
+                    quantity=models.F('quantity') + 1
+                )
+                card.refresh_from_db()
+
+            profile.cards_opened = models.F('cards_opened') + 1
+            profile.stars_balance = models.F('stars_balance') - price
+            profile.save(update_fields=['cards_opened', 'stars_balance'])
+            profile.refresh_from_db()
 
         serializer = CardSerializer(card, context={'request': request})
         return Response({'card': serializer.data, 'group': selected_group.name, 'price': price})

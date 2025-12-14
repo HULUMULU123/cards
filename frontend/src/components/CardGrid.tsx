@@ -49,6 +49,10 @@ const Quantity = styled.div`
 const Title = styled.span`
   font-weight: 700;
   letter-spacing: 0.5px;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `
 
 const BGImage = styled.img`
@@ -58,6 +62,34 @@ const BGImage = styled.img`
   height: 100%;
   object-fit: cover;     /* ключевой момент — растягивает без искажений */
   object-position: center;
+`
+
+const Info = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.65) 100%);
+`
+
+const Rarity = styled.span`
+  font-size: 12px;
+  text-transform: capitalize;
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
+`
+
+const Fallback = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08), transparent 50%),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.06), transparent 45%),
+    #1c0f2f;
 `
 
 
@@ -77,14 +109,18 @@ export default function CardGrid({ cards }: CardGridProps) {
         if (!card) {
           return <CardSlot key={`placeholder-${index}`} $placeholder />
         }
-        const style = card.image_url
-          ? { backgroundImage: `linear-gradient(120deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(${card.image_url})` }
-          : undefined
         return (
           <CardSlot key={card.id}>
-            <BGImage src={card.image_url} alt="" />
-
-            <Quantity>{card.quantity}×</Quantity>
+            {card.image_url ? (
+              <BGImage src={card.image_url} alt={card.title} loading="lazy" decoding="async" />
+            ) : (
+              <Fallback />
+            )}
+            {card.quantity > 1 && <Quantity>{card.quantity}×</Quantity>}
+            <Info>
+              <Title title={card.title}>{card.title}</Title>
+              <Rarity>{card.group || card.rarity}</Rarity>
+            </Info>
           </CardSlot>
         )
       })}

@@ -139,6 +139,7 @@ class CollectionCard(models.Model):
         related_name='collection_cards',
         verbose_name='Шаблон карточки',
     )
+    quantity = models.PositiveIntegerField(default=1, verbose_name='Количество')
 
     def __str__(self):
         return f"{self.title} ({self.user.username})"

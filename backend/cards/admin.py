@@ -21,10 +21,10 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(CollectionCard)
 class CollectionCardAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'rarity')
+    list_display = ('user', 'title', 'rarity', 'quantity')
     list_filter = ('rarity',)
     search_fields = ('title', 'user__username')
-    fields = ('user', 'title', 'rarity', 'image', 'animation', 'template')
+    fields = ('user', 'title', 'rarity', 'quantity', 'image', 'animation', 'template')
 
 
 @admin.register(WithdrawRequest)
@@ -46,6 +46,7 @@ class CardGroupAdmin(admin.ModelAdmin):
     list_display = [field.name for field in CardGroup._meta.fields]
     list_filter = ('name',)
     search_fields = ('name',)
+    list_editable = ('drop_chance',)
 
 
 @admin.register(CardSettings)
