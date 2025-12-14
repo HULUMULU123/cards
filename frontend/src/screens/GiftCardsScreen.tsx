@@ -148,7 +148,7 @@ export default function GiftCardsScreen() {
   const balance = profile?.stars_balance ?? 0
   const tgBalance = profile?.telegram_stars_balance ?? balance
   const canAfford = balance >= price
-  const buttonLabel = opening ? 'Открываем...' : price > 0 ? `Открыть за ${price}⭐` : 'Открыть'
+  const buttonLabel = opening ? 'Открываем...' : price > 0 ? 'Открыть' : 'Открыть'
 
   useEffect(() => {
     void fetchProfile()

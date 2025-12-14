@@ -244,6 +244,13 @@ class CollectionView(APIView):
 
         template = random.choice(templates)
 
+        prev_total = (
+            CollectionCard.objects.filter(user=request.user, template__group=selected_group)
+            .aggregate(total=models.Sum('quantity'))
+            .get('total')
+            or 0
+        )
+
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
             if profile.stars_balance < price:
@@ -268,13 +275,32 @@ class CollectionView(APIView):
                 )
                 card.refresh_from_db()
 
+            new_total = (
+                CollectionCard.objects.filter(user=request.user, template__group=selected_group)
+                .aggregate(total=models.Sum('quantity'))
+                .get('total')
+                or 0
+            )
+            prev_rows = prev_total // 3
+            new_rows = new_total // 3
+            reward_rows = max(0, new_rows - prev_rows)
+            reward_amount = reward_rows * (selected_group.row_reward or 0)
+
             profile.cards_opened = models.F('cards_opened') + 1
-            profile.stars_balance = models.F('stars_balance') - price
-            profile.save(update_fields=['cards_opened', 'stars_balance'])
+            profile.stars_balance = models.F('stars_balance') - price + reward_amount
+            profile.stars_withdrawable = models.F('stars_withdrawable') + reward_amount
+            profile.save(update_fields=['cards_opened', 'stars_balance', 'stars_withdrawable'])
             profile.refresh_from_db()
 
         serializer = CardSerializer(card, context={'request': request})
-        return Response({'card': serializer.data, 'group': selected_group.name, 'price': price})
+        return Response(
+            {
+                'card': serializer.data,
+                'group': selected_group.name,
+                'price': price,
+                'reward_earned': reward_amount,
+            }
+        )
 
 
 class WithdrawView(APIView):
