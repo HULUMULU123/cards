@@ -6,16 +6,19 @@ import starIcon from '../assets/icons/star.svg'
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 12px;
   width: 100%;
+  justify-items: center;
 `
 
 const CardSlot = styled.div<{ $placeholder?: boolean }>`
   position: relative;
+  width: 100%;
+  max-width: 160px;
   border-radius: 24px;
   overflow: hidden;
   aspect-ratio: 3 / 5;
-  min-height: 180px;
+  min-height: 0;
   padding: 0;
   display: flex;
   align-items: flex-end;

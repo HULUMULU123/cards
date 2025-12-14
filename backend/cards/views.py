@@ -5,6 +5,7 @@ import random
 from typing import Optional
 from urllib.parse import parse_qsl
 
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
@@ -100,6 +101,21 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
         return None
 
     return data
+def fetch_external_balance(user_id: str) -> Optional[int]:
+    token = getattr(settings, 'BALANCE_API_TOKEN', '')
+    base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
+    if not token or not base_url or not user_id:
+        return None
+    url = f"{base_url.rstrip('/')}/balance/{user_id}"
+    headers = {'Authorization': f"Bearer {token}"}
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        if response.status_code != 200:
+            return None
+        payload = response.json()
+        return int(payload.get('balance', 0))
+    except (requests.RequestException, ValueError, TypeError):
+        return None
 
 
 class TelegramAuthView(APIView):
@@ -196,6 +212,11 @@ class TelegramAuthView(APIView):
 class ProfileView(APIView):
     def get(self, request, *args, **kwargs):
         profile = request.user.profile
+        if profile.telegram_id:
+            external_balance = fetch_external_balance(profile.telegram_id)
+            if external_balance is not None and external_balance != profile.telegram_stars_balance:
+                profile.telegram_stars_balance = external_balance
+                profile.save(update_fields=['telegram_stars_balance'])
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
         data['cards_opened'] = CollectionCard.objects.filter(user=request.user).count()
