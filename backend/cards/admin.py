@@ -52,3 +52,4 @@ class CardGroupAdmin(admin.ModelAdmin):
 @admin.register(CardSettings)
 class CardSettingsAdmin(admin.ModelAdmin):
     list_display = [field.name for field in CardSettings._meta.fields]
+    list_editable = ('referral_reward', 'open_price')

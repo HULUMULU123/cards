@@ -164,10 +164,8 @@ class TelegramAuthView(APIView):
                     profile.referred_by = inviter_profile
                     updated_fields.append('referred_by')
                     inviter_profile.referrals_count = models.F('referrals_count') + 1
-                    reward = 0
-                    settings_instance = CardSettings.objects.first()
-                    if settings_instance:
-                        reward = settings_instance.referral_reward
+                    settings_instance, _ = CardSettings.objects.get_or_create()
+                    reward = settings_instance.referral_reward
                     if reward:
                         inviter_profile.stars_balance = models.F('stars_balance') + reward
                         inviter_profile.stars_withdrawable = models.F('stars_withdrawable') + reward
@@ -289,9 +287,14 @@ class WithdrawView(APIView):
         with transaction.atomic():
             profile = request.user.profile
             amount = serializer.validated_data['stars_amount']
-            profile.stars_withdrawable -= amount
             profile.stars_balance = models.F('stars_balance') - amount
+            profile.stars_withdrawable = models.F('stars_withdrawable') - amount
             profile.save(update_fields=['stars_withdrawable', 'stars_balance'])
+            profile.refresh_from_db()
+            # не даём уйти в минус доступных к выводу
+            if profile.stars_withdrawable < 0:
+                profile.stars_withdrawable = 0
+                profile.save(update_fields=['stars_withdrawable'])
             withdraw = WithdrawRequest.objects.create(
                 user=request.user,
                 stars_amount=amount,
