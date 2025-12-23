@@ -104,7 +104,7 @@ const CardSubtitle = styled.p`
 `
 
 const OpenButton = styled.button`
-  width: 65%;
+  min-width: 65%;
   max-width: 280px;
   padding: 10px;
   border: none;

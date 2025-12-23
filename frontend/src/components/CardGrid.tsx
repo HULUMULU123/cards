@@ -186,10 +186,10 @@ export default function CardGrid({
                   <Fallback />
                 )}
                 {card.quantity > 1 && <Quantity>{card.quantity}×</Quantity>}
-                <Info>
+                {/* <Info>
                   <Title title={card.title}>{card.title}</Title>
                   <Rarity>{card.group?.name || card.rarity}</Rarity>
-                </Info>
+                </Info> */}
               </CardSlot>
             )
           })}
