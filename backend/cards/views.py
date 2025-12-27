@@ -102,12 +102,12 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
 
     return data
 def fetch_external_balance(user_id: str) -> Optional[int]:
-    token = getattr(settings, 'BALANCE_API_TOKEN', '')
+    api_key = getattr(settings, 'BALANCE_API_KEY', '')
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
-    if not token or not base_url or not user_id:
+    if not api_key or not base_url or not user_id:
         return None
     url = f"{base_url.rstrip('/')}/{user_id}"
-    headers = {'Authorization': f"Bearer {token}"}
+    headers = {'X-API-Key': api_key}
     try:
         response = requests.get(url, headers=headers, timeout=5)
         if response.status_code != 200:
@@ -118,14 +118,14 @@ def fetch_external_balance(user_id: str) -> Optional[int]:
         return None
 
 
-def debit_external_balance(user_id: str, amount: int, reason: str = 'open_card') -> Optional[int]:
-    token = getattr(settings, 'BALANCE_API_TOKEN', '')
+def debit_external_balance(user_id: str, amount: int) -> Optional[int]:
+    api_key = getattr(settings, 'BALANCE_API_KEY', '')
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
-    if not token or not base_url or not user_id or amount <= 0:
+    if not api_key or not base_url or not user_id or amount <= 0:
         return None
-    url = f"{base_url.rstrip('/')}/debit"
-    headers = {'Authorization': f"Bearer {token}", 'Content-Type': 'application/json'}
-    payload = {'user_id': int(user_id), 'amount': amount, 'reason': reason}
+    url = f"{base_url.rstrip('/')}/{user_id}/debit"
+    headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
+    payload = {'amount': amount}
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=5)
         if response.status_code != 200:
@@ -286,7 +286,7 @@ class CollectionView(APIView):
                     {'detail': 'Не удалось подтвердить Telegram баланс пользователя'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            external_balance = debit_external_balance(telegram_id, price, reason='open_card')
+            external_balance = debit_external_balance(telegram_id, price)
             if external_balance is None:
                 return Response(
                     {'detail': 'Недостаточно звёзд на Telegram балансе'},
