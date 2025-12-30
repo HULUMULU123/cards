@@ -123,7 +123,7 @@ def debit_external_balance(user_id: str, amount: int) -> Optional[int]:
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not api_key or not base_url or not user_id or amount <= 0:
         return None
-    url = f"{base_url.rstrip('/')}/{user_id}/credit"
+    url = f"{base_url.rstrip('/')}/{user_id}/debit"
     headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
     payload = {'amount': amount}
     try:
@@ -141,7 +141,7 @@ def credit_external_balance(user_id: str, amount: int) -> Optional[int]:
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not api_key or not base_url or not user_id or amount <= 0:
         return None
-    url = f"{base_url.rstrip('/')}/{user_id}/debit"
+    url = f"{base_url.rstrip('/')}/{user_id}/credit"
     headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
     payload = {'amount': amount}
     try:
