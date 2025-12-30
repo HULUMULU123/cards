@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 
 import giftPack from '../assets/img/card_pocket.png'
+import starIcon from '../assets/icons/star.svg'
 import CardOpenModal from '../components/CardOpenModal'
 import BalancePill from '../components/BalancePill'
 import ReferralBadge from '../components/ReferralBadge'
@@ -138,11 +139,54 @@ const ActionsRow = styled.div`
   max-width: 420px;
 `
 
+const PriceToast = styled.div<{ $visible: boolean }>`
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%) translateY(${({ $visible }) => ($visible ? '0' : '16px')});
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+  z-index: 1000;
+`
+
+const ToastBody = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(20, 11, 32, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  color: #fff;
+`
+
+const ToastText = styled.span`
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+`
+
+const ToastPrice = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 219, 77, 0.25), rgba(255, 138, 0, 0.25));
+  color: #ffe7b3;
+  font-weight: 800;
+  font-size: 14px;
+`
+
 export default function GiftCardsScreen() {
   const navigate = useNavigate()
   const { profile, openCardFromGroup, fetchProfile, error, setError } = useAuthStore()
   const [openedCard, setOpenedCard] = useState<Card | null>(null)
   const [opening, setOpening] = useState(false)
+  const [showPriceHint, setShowPriceHint] = useState(false)
+  const hintTimeoutRef = useRef<number | null>(null)
 
   const price = profile?.card_open_price ?? 0
   const balance = profile?.stars_balance ?? 0
@@ -154,12 +198,30 @@ export default function GiftCardsScreen() {
     void fetchProfile()
   }, [fetchProfile])
 
+  useEffect(() => {
+    if (!showPriceHint) return
+    if (hintTimeoutRef.current) {
+      window.clearTimeout(hintTimeoutRef.current)
+    }
+    hintTimeoutRef.current = window.setTimeout(() => setShowPriceHint(false), 2400)
+    return () => {
+      if (hintTimeoutRef.current) {
+        window.clearTimeout(hintTimeoutRef.current)
+      }
+    }
+  }, [showPriceHint])
+
   const handleReferralClick = () => {
     navigate('/profile')
   }
 
   const handleOpenCard = async () => {
     if (opening) return
+    if (!canAfford) {
+      setError(null)
+      setShowPriceHint(true)
+      return
+    }
     setError(null)
     setOpening(true)
     try {
@@ -170,7 +232,9 @@ export default function GiftCardsScreen() {
     } catch (openError) {
       const message = openError instanceof Error ? openError.message : 'Не удалось открыть карточку'
       setError(message)
-      alert(message)
+      if (message.toLowerCase().includes('недостаточно') && price > 0) {
+        setShowPriceHint(true)
+      }
     } finally {
       setOpening(false)
     }
@@ -192,7 +256,7 @@ export default function GiftCardsScreen() {
           <CardImage src={giftPack} alt="pack" />
           <CardTitle>Откройте набор карт</CardTitle>
           <CardSubtitle>Каждая группа имеет свой шанс выпадения</CardSubtitle>
-          <OpenButton onClick={handleOpenCard} disabled={opening || !canAfford}>
+          <OpenButton onClick={handleOpenCard} disabled={opening}>
             {canAfford ? buttonLabel : 'Недостаточно звёзд'}
           </OpenButton>
           {!canAfford && price > 0 && (
@@ -207,6 +271,16 @@ export default function GiftCardsScreen() {
       </ActionsRow>
 
       {openedCard && <CardOpenModal card={openedCard} onClose={() => setOpenedCard(null)} />}
+
+      <PriceToast $visible={showPriceHint} aria-hidden={!showPriceHint}>
+        <ToastBody>
+          <ToastText>Стоимость открытия</ToastText>
+          <ToastPrice>
+            {price}
+            <img src={starIcon} alt="star" width={14} height={14} />
+          </ToastPrice>
+        </ToastBody>
+      </PriceToast>
     </Screen>
   )
 }

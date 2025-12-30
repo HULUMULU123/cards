@@ -136,6 +136,24 @@ def debit_external_balance(user_id: str, amount: int) -> Optional[int]:
         return None
 
 
+def deposit_external_balance(user_id: str, amount: int) -> Optional[int]:
+    api_key = getattr(settings, 'BALANCE_API_KEY', '')
+    base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
+    if not api_key or not base_url or not user_id or amount <= 0:
+        return None
+    url = f"{base_url.rstrip('/')}/{user_id}/deposit"
+    headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
+    payload = {'amount': amount}
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=5)
+        if response.status_code != 200:
+            return None
+        payload = response.json()
+        return int(payload.get('balance', 0))
+    except (requests.RequestException, ValueError, TypeError):
+        return None
+
+
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -296,15 +314,12 @@ class CollectionView(APIView):
         templates = list(selected_group.templates.all())
         if not templates:
             return Response({'detail': 'В выбранной группе нет карточек'}, status=status.HTTP_400_BAD_REQUEST)
+        templates_total = len(templates)
 
         template = random.choice(templates)
 
-        prev_total = (
-            CollectionCard.objects.filter(user=request.user, template__group=selected_group)
-            .aggregate(total=models.Sum('quantity'))
-            .get('total')
-            or 0
-        )
+        reward_amount = 0
+        group_completed = False
 
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
@@ -313,6 +328,14 @@ class CollectionView(APIView):
                     {'detail': 'Недостаточно звёзд для открытия карточки'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            prev_unique = (
+                CollectionCard.objects.select_for_update()
+                .filter(user=request.user, template__group=selected_group)
+                .values('template')
+                .distinct()
+                .count()
+            )
 
             card, created = CollectionCard.objects.select_for_update().get_or_create(
                 user=request.user,
@@ -330,26 +353,30 @@ class CollectionView(APIView):
                 )
                 card.refresh_from_db()
 
-            new_total = (
+            new_unique = (
                 CollectionCard.objects.filter(user=request.user, template__group=selected_group)
-                .aggregate(total=models.Sum('quantity'))
-                .get('total')
-                or 0
+                .values('template')
+                .distinct()
+                .count()
             )
-            prev_rows = prev_total // 3
-            new_rows = new_total // 3
-            reward_rows = max(0, new_rows - prev_rows)
-            reward_amount = reward_rows * (selected_group.row_reward or 0)
+            group_completed = prev_unique < templates_total and new_unique == templates_total
+            reward_amount = (selected_group.row_reward or 0) if group_completed else 0
 
             profile.cards_opened = models.F('cards_opened') + 1
-            profile.stars_balance = models.F('stars_balance') - price + reward_amount
-            profile.stars_withdrawable = models.F('stars_withdrawable') + reward_amount
-            update_fields = ['cards_opened', 'stars_balance', 'stars_withdrawable']
+            profile.stars_balance = models.F('stars_balance') - price
+            update_fields = ['cards_opened', 'stars_balance']
             if external_balance is not None:
                 profile.telegram_stars_balance = external_balance
                 update_fields.append('telegram_stars_balance')
             profile.save(update_fields=update_fields)
             profile.refresh_from_db()
+
+        if group_completed and reward_amount > 0 and telegram_id:
+            deposit_balance = deposit_external_balance(telegram_id, reward_amount)
+            if deposit_balance is not None:
+                UserProfile.objects.filter(user=request.user).update(
+                    telegram_stars_balance=deposit_balance
+                )
 
         serializer = CardSerializer(card, context={'request': request})
         return Response(
