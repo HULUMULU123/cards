@@ -317,6 +317,28 @@ class CollectionView(APIView):
             .annotate(total=models.Count('id'))
             .values_list('group_id', 'total')
         )
+        groups_payload = []
+        for group in CardGroup.objects.all().prefetch_related('templates'):
+            row_rewards = group.get_row_rewards()
+            total_templates = group.rows_count * 3 if group.rows_count else 0
+            if total_templates == 0:
+                total_templates = len(row_rewards) * 3 if row_rewards else group.templates.count()
+            templates = list(
+                group.templates.order_by('-rank', 'id').values('id', 'rank')
+            )
+            groups_payload.append(
+                {
+                    'id': group.id,
+                    'name': group.name,
+                    'color': group.color,
+                    'rating': group.rating,
+                    'drop_chance': group.drop_chance,
+                    'rows_count': group.rows_count,
+                    'row_rewards': row_rewards,
+                    'total_templates': total_templates,
+                    'templates': templates,
+                }
+            )
         serializer = CardSerializer(
             cards,
             many=True,
@@ -325,7 +347,7 @@ class CollectionView(APIView):
                 'group_totals': group_totals,
             },
         )
-        return Response({'cards': serializer.data})
+        return Response({'cards': serializer.data, 'groups': groups_payload})
 
     def post(self, request, *args, **kwargs):
         groups = list(CardGroup.objects.all())

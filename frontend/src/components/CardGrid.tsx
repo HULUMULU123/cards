@@ -182,6 +182,7 @@ interface CardGridProps {
   groupRating?: number
   groupRowRewards?: number[]
   groupTotal?: number
+  templates?: { id: number; rank?: number }[]
   onCardOpen?: (card: Card) => void
 }
 
@@ -192,23 +193,51 @@ export default function CardGrid({
   groupRating,
   groupRowRewards,
   groupTotal,
+  templates,
   onCardOpen,
 }: CardGridProps) {
   const columns = 3
   const sortedCards = [...cards].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
+  const cardsByTemplate = new Map<number, Card>()
+  cards.forEach((card) => {
+    if (card.template_id != null) {
+      cardsByTemplate.set(card.template_id, card)
+    }
+  })
   const rows: (Card | null)[][] = []
   const collected = cards.length
   const total = groupTotal ?? collected
   const rowRewards = groupRowRewards ?? []
   const displayRowRewards = rowRewards.length > 0 ? [...rowRewards].reverse() : []
-  const totalRows = rowRewards.length > 0 ? rowRewards.length : Math.max(1, Math.ceil(total / columns))
+  const templateList = templates ? [...templates].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0)) : []
+  const totalRows =
+    rowRewards.length > 0
+      ? rowRewards.length
+      : Math.max(1, Math.ceil((templateList.length || sortedCards.length) / columns))
   const badgeReward =
     rowRewards.length > 0 ? rowRewards.reduce((sum, reward) => sum + reward, 0) : 0
-  for (let rowIndex = 0; rowIndex < totalRows; rowIndex += 1) {
-    const start = rowIndex * columns
-    const row = sortedCards.slice(start, start + columns)
-    while (row.length < columns) row.push(null)
-    rows.push(row)
+  const totalSlots = totalRows * columns
+  if (templateList.length > 0) {
+    const slots: (Card | null)[] = []
+    for (let index = 0; index < totalSlots; index += 1) {
+      const template = templateList[index]
+      if (!template) {
+        slots.push(null)
+        continue
+      }
+      const card = cardsByTemplate.get(template.id) ?? null
+      slots.push(card)
+    }
+    for (let i = 0; i < slots.length; i += columns) {
+      rows.push(slots.slice(i, i + columns))
+    }
+  } else {
+    for (let rowIndex = 0; rowIndex < totalRows; rowIndex += 1) {
+      const start = rowIndex * columns
+      const row = sortedCards.slice(start, start + columns)
+      while (row.length < columns) row.push(null)
+      rows.push(row)
+    }
   }
   const pointerRef = useRef<{ x: number; y: number; time: number; id: number } | null>(null)
   const movedRef = useRef(false)

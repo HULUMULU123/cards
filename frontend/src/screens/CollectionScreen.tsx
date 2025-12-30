@@ -47,6 +47,7 @@ const EmptyState = styled.div`
 
 export default function CollectionScreen() {
   const cards = useAuthStore((state) => state.collection)
+  const groups = useAuthStore((state) => state.collectionGroups)
   const fetchCollection = useAuthStore((state) => state.fetchCollection)
   const profile = useAuthStore((state) => state.profile)
   const navigate = useNavigate()
@@ -57,33 +58,74 @@ export default function CollectionScreen() {
   }, [fetchCollection])
 
   const grouped = useMemo(() => {
-    const map = new Map<
-      string,
-      {
-        cards: typeof cards
-        color?: string
-        rating?: number
-        rowRewards?: number[]
-        total?: number
-      }
-    >()
+    if (groups.length === 0) {
+      const map = new Map<
+        string,
+        {
+          cards: typeof cards
+          color?: string
+          rating?: number
+          rowRewards?: number[]
+          total?: number
+          templates?: { id: number; rank?: number }[]
+        }
+      >()
+      cards.forEach((card) => {
+        const key = card.group?.name || 'Без группы'
+        if (!map.has(key)) {
+          map.set(key, {
+            cards: [],
+            color: card.group?.color,
+            rating: card.group?.rating,
+            rowRewards: card.group?.row_rewards,
+            total: card.group?.total_templates,
+          })
+        }
+        map.get(key)!.cards.push(card)
+      })
+      return Array.from(map.entries())
+        .map(([name, value]) => ({ name, ...value }))
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    }
+
+    const cardsByGroup = new Map<number, Card[]>()
+    const ungrouped: Card[] = []
     cards.forEach((card) => {
-      const key = card.group?.name || 'Без группы'
-      if (!map.has(key)) {
-        map.set(key, {
-          cards: [],
-          color: card.group?.color,
-          rating: card.group?.rating,
-          rowRewards: card.group?.row_rewards,
-          total: card.group?.total_templates,
-        })
+      const groupId = card.group?.id
+      if (groupId == null) {
+        ungrouped.push(card)
+        return
       }
-      map.get(key)!.cards.push(card)
+      if (!cardsByGroup.has(groupId)) {
+        cardsByGroup.set(groupId, [])
+      }
+      cardsByGroup.get(groupId)!.push(card)
     })
-    return Array.from(map.entries())
-      .map(([name, value]) => ({ name, ...value }))
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-  }, [cards])
+
+    const groupedFromApi = groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      cards: cardsByGroup.get(group.id) ?? [],
+      color: group.color,
+      rating: group.rating,
+      rowRewards: group.row_rewards,
+      total: group.total_templates,
+      templates: group.templates,
+    }))
+
+    if (ungrouped.length > 0) {
+      groupedFromApi.push({
+        id: -1,
+        name: 'Без группы',
+        cards: ungrouped,
+        rowRewards: [],
+        total: ungrouped.length,
+        templates: [],
+      })
+    }
+
+    return groupedFromApi.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+  }, [cards, groups])
 
   const handleReferral = () => navigate('/profile')
 
@@ -105,6 +147,7 @@ export default function CollectionScreen() {
                 groupRating={group.rating}
                 groupRowRewards={group.rowRewards}
                 groupTotal={group.total}
+                templates={group.templates}
                 onCardOpen={(card) => setPreviewCard(card)}
               />
             </div>

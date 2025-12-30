@@ -26,9 +26,11 @@ export interface Card {
   rarity?: string
   rank?: number
   quantity: number
+  template_id?: number
   image_url?: string
   animation_url?: string
   group?: {
+    id: number
     name: string
     color?: string
     rating?: number
@@ -37,6 +39,18 @@ export interface Card {
     row_rewards?: number[]
     total_templates?: number
   } | null
+}
+
+export interface CollectionGroup {
+  id: number
+  name: string
+  color?: string
+  rating?: number
+  drop_chance?: number
+  rows_count?: number
+  row_rewards?: number[]
+  total_templates?: number
+  templates: { id: number; rank?: number }[]
 }
 
 export interface WithdrawRequest {
@@ -53,6 +67,7 @@ export interface WithdrawHistoryItem {
 
 export interface CollectionResponse {
   cards: Card[]
+  groups?: CollectionGroup[]
 }
 
 export interface WithdrawHistoryResponse {

@@ -40,6 +40,7 @@ class CardSerializer(serializers.ModelSerializer):
     animation_url = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
+    template_id = serializers.IntegerField(source='template_id', read_only=True)
 
     class Meta:
         model = CollectionCard
@@ -49,6 +50,7 @@ class CardSerializer(serializers.ModelSerializer):
             'rarity',
             'rank',
             'quantity',
+            'template_id',
             'image_url',
             'animation_url',
             'group',
@@ -86,6 +88,7 @@ class CardSerializer(serializers.ModelSerializer):
         elif total_templates is None:
             total_templates = group.templates.count()
         return {
+            'id': group.id,
             'name': group.name,
             'color': group.color,
             'rating': group.rating,

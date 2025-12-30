@@ -13,6 +13,7 @@ import {
 import fallbackCardImage from '../assets/img/card.png'
 import {
   Card,
+  CollectionGroup,
   InvoiceResponse,
   UserProfile,
   WithdrawHistoryItem,
@@ -52,6 +53,7 @@ interface AuthState {
   token: string | null
   profile: UserProfile | null
   collection: Card[]
+  collectionGroups: CollectionGroup[]
   withdrawHistory: WithdrawHistoryItem[]
   loading: boolean
   error: string | null
@@ -77,6 +79,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   token: null,
   profile: null,
   collection: [],
+  collectionGroups: [],
   withdrawHistory: [],
   loading: false,
   error: null,
@@ -175,7 +178,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         staleTime: 60_000,
       })
       if (data?.cards) {
-        set({ collection: data.cards })
+        set({ collection: data.cards, collectionGroups: data.groups ?? [] })
         queryClient.setQueryData(['collection', token], data)
       }
     } catch (error) {
