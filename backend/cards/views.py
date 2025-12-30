@@ -123,7 +123,7 @@ def debit_external_balance(user_id: str, amount: int) -> Optional[int]:
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not api_key or not base_url or not user_id or amount <= 0:
         return None
-    url = f"{base_url.rstrip('/')}/{user_id}/debit"
+    url = f"{base_url.rstrip('/')}/{user_id}/credit"
     headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
     payload = {'amount': amount}
     try:
@@ -141,7 +141,7 @@ def deposit_external_balance(user_id: str, amount: int) -> Optional[int]:
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not api_key or not base_url or not user_id or amount <= 0:
         return None
-    url = f"{base_url.rstrip('/')}/{user_id}/deposit"
+    url = f"{base_url.rstrip('/')}/{user_id}/debit"
     headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
     payload = {'amount': amount}
     try:
@@ -217,6 +217,12 @@ class TelegramAuthView(APIView):
         if stars_balance_value and profile.telegram_stars_balance != stars_balance_value:
             profile.telegram_stars_balance = stars_balance_value
             updated_fields.append('telegram_stars_balance')
+        if stars_balance_value and profile.stars_balance != stars_balance_value:
+            profile.stars_balance = stars_balance_value
+            updated_fields.append('stars_balance')
+        if stars_balance_value and profile.stars_withdrawable != stars_balance_value:
+            profile.stars_withdrawable = stars_balance_value
+            updated_fields.append('stars_withdrawable')
 
         start_param = parsed_data.get('start_param') or parsed_data.get('start')
         if start_param and start_param.startswith('ref_') and not profile.referred_by:
@@ -415,12 +421,13 @@ class CollectionView(APIView):
             profile.refresh_from_db()
 
         if group_completed and reward_amount > 0 and telegram_id:
-            deposit_balance = deposit_external_balance(telegram_id, reward_amount)
-            if deposit_balance is not None:
+            deposit_external_balance(telegram_id, reward_amount)
+            refreshed_balance = fetch_external_balance(telegram_id)
+            if refreshed_balance is not None:
                 UserProfile.objects.filter(user=request.user).update(
-                    telegram_stars_balance=deposit_balance,
-                    stars_balance=deposit_balance,
-                    stars_withdrawable=deposit_balance,
+                    telegram_stars_balance=refreshed_balance,
+                    stars_balance=refreshed_balance,
+                    stars_withdrawable=refreshed_balance,
                 )
 
         serializer = CardSerializer(card, context={'request': request})
