@@ -136,7 +136,7 @@ def debit_external_balance(user_id: str, amount: int) -> Optional[int]:
         return None
 
 
-def deposit_external_balance(user_id: str, amount: int) -> Optional[int]:
+def credit_external_balance(user_id: str, amount: int) -> Optional[int]:
     api_key = getattr(settings, 'BALANCE_API_KEY', '')
     base_url = getattr(settings, 'BALANCE_API_BASE_URL', '')
     if not api_key or not base_url or not user_id or amount <= 0:
@@ -421,7 +421,7 @@ class CollectionView(APIView):
             profile.refresh_from_db()
 
         if group_completed and reward_amount > 0 and telegram_id:
-            deposit_external_balance(telegram_id, reward_amount)
+            credit_external_balance(telegram_id, reward_amount)
             refreshed_balance = fetch_external_balance(telegram_id)
             if refreshed_balance is not None:
                 UserProfile.objects.filter(user=request.user).update(
