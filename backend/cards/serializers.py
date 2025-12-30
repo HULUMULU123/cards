@@ -74,12 +74,17 @@ class CardSerializer(serializers.ModelSerializer):
         if not obj.template or not obj.template.group:
             return None
         group = obj.template.group
+        group_totals = self.context.get('group_totals') or {}
+        total_templates = group_totals.get(group.id)
+        if total_templates is None:
+            total_templates = group.templates.count()
         return {
             'name': group.name,
             'color': group.color,
             'rating': group.rating,
             'drop_chance': group.drop_chance,
             'row_reward': group.row_reward,
+            'total_templates': total_templates,
         }
 
 

@@ -154,6 +154,19 @@ def deposit_external_balance(user_id: str, amount: int) -> Optional[int]:
         return None
 
 
+def notify_withdrawal(username: str, amount: int) -> None:
+    api_key = getattr(settings, 'BALANCE_API_KEY', '')
+    base_url = getattr(settings, 'NOTIFY_API_BASE_URL', '')
+    if not api_key or not base_url or not username or amount <= 0:
+        return None
+    headers = {'X-API-Key': api_key, 'Content-Type': 'application/json'}
+    payload = {'username': username, 'amount': amount}
+    try:
+        requests.post(base_url, json=payload, headers=headers, timeout=5)
+    except requests.RequestException:
+        return None
+
+
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -250,9 +263,26 @@ class ProfileView(APIView):
         profile = request.user.profile
         if profile.telegram_id:
             external_balance = fetch_external_balance(profile.telegram_id)
-            if external_balance is not None and external_balance != profile.telegram_stars_balance:
-                profile.telegram_stars_balance = external_balance
-                profile.save(update_fields=['telegram_stars_balance'])
+            if external_balance is not None:
+                needs_update = (
+                    external_balance != profile.telegram_stars_balance
+                    or external_balance != profile.stars_balance
+                    or external_balance != profile.stars_withdrawable
+                )
+                if needs_update:
+                    profile.telegram_stars_balance = external_balance
+                    profile.stars_balance = external_balance
+                    profile.stars_withdrawable = external_balance
+                    profile.save(
+                        update_fields=[
+                            'telegram_stars_balance',
+                            'stars_balance',
+                            'stars_withdrawable',
+                        ]
+                    )
+        elif profile.stars_withdrawable != profile.stars_balance:
+            profile.stars_withdrawable = profile.stars_balance
+            profile.save(update_fields=['stars_withdrawable'])
         data = UserProfileSerializer(profile).data
         data['referral_link'] = f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start=ref_{profile.referral_code}"
         data['cards_opened'] = CollectionCard.objects.filter(user=request.user).count()
@@ -274,7 +304,14 @@ class CollectionView(APIView):
             .select_related('template', 'template__group')
             .order_by('title')
         )
-        serializer = CardSerializer(cards, many=True, context={'request': request})
+        group_totals = dict(
+            CardTemplate.objects.values('group_id')
+            .annotate(total=models.Count('id'))
+            .values_list('group_id', 'total')
+        )
+        serializer = CardSerializer(
+            cards, many=True, context={'request': request, 'group_totals': group_totals}
+        )
         return Response({'cards': serializer.data})
 
     def post(self, request, *args, **kwargs):
@@ -363,8 +400,14 @@ class CollectionView(APIView):
             reward_amount = (selected_group.row_reward or 0) if group_completed else 0
 
             profile.cards_opened = models.F('cards_opened') + 1
-            profile.stars_balance = models.F('stars_balance') - price
-            update_fields = ['cards_opened', 'stars_balance']
+            if external_balance is not None:
+                profile.stars_balance = external_balance
+                profile.stars_withdrawable = external_balance
+                update_fields = ['cards_opened', 'stars_balance', 'stars_withdrawable']
+            else:
+                profile.stars_balance = models.F('stars_balance') - price
+                profile.stars_withdrawable = models.F('stars_balance') - price
+                update_fields = ['cards_opened', 'stars_balance', 'stars_withdrawable']
             if external_balance is not None:
                 profile.telegram_stars_balance = external_balance
                 update_fields.append('telegram_stars_balance')
@@ -375,7 +418,9 @@ class CollectionView(APIView):
             deposit_balance = deposit_external_balance(telegram_id, reward_amount)
             if deposit_balance is not None:
                 UserProfile.objects.filter(user=request.user).update(
-                    telegram_stars_balance=deposit_balance
+                    telegram_stars_balance=deposit_balance,
+                    stars_balance=deposit_balance,
+                    stars_withdrawable=deposit_balance,
                 )
 
         serializer = CardSerializer(card, context={'request': request})
@@ -398,6 +443,8 @@ class WithdrawView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = WithdrawCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
+        notify_username = serializer.validated_data['recipient_username']
+        notify_amount = serializer.validated_data['stars_amount']
         with transaction.atomic():
             profile = request.user.profile
             amount = serializer.validated_data['stars_amount']
@@ -414,6 +461,7 @@ class WithdrawView(APIView):
                 stars_amount=amount,
                 recipient_username=serializer.validated_data['recipient_username'],
             )
+        notify_withdrawal(notify_username, notify_amount)
         return Response(WithdrawRequestSerializer(withdraw).data, status=status.HTTP_201_CREATED)
 
 

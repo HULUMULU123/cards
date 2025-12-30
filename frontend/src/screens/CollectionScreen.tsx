@@ -56,7 +56,7 @@ export default function CollectionScreen() {
   const grouped = useMemo(() => {
     const map = new Map<
       string,
-      { cards: typeof cards; color?: string; rating?: number; reward?: number }
+      { cards: typeof cards; color?: string; rating?: number; reward?: number; total?: number }
     >()
     cards.forEach((card) => {
       const key = card.group?.name || 'Без группы'
@@ -66,6 +66,7 @@ export default function CollectionScreen() {
           color: card.group?.color,
           rating: card.group?.rating,
           reward: card.group?.row_reward,
+          total: card.group?.total_templates,
         })
       }
       map.get(key)!.cards.push(card)
@@ -94,6 +95,7 @@ export default function CollectionScreen() {
                 groupColor={group.color}
                 groupRating={group.rating}
                 groupReward={group.reward}
+                groupTotal={group.total}
               />
             </div>
           ))

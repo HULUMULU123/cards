@@ -33,6 +33,7 @@ export interface Card {
     rating?: number
     drop_chance?: number
     row_reward?: number
+    total_templates?: number
   } | null
 }
 

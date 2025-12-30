@@ -219,7 +219,9 @@ export default function GiftCardsScreen() {
     if (opening) return
     if (!canAfford) {
       setError(null)
-      setShowPriceHint(true)
+      if (price > 0) {
+        setShowPriceHint(true)
+      }
       return
     }
     setError(null)
@@ -232,7 +234,13 @@ export default function GiftCardsScreen() {
     } catch (openError) {
       const message = openError instanceof Error ? openError.message : 'Не удалось открыть карточку'
       setError(message)
-      if (message.toLowerCase().includes('недостаточно') && price > 0) {
+      const normalized = message.toLowerCase()
+      const shouldShowPrice =
+        price > 0 &&
+        (normalized.includes('недостаточно') ||
+          normalized.includes('telegram') ||
+          normalized.includes('телеграм'))
+      if (shouldShowPrice) {
         setShowPriceHint(true)
       }
     } finally {

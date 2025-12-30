@@ -140,12 +140,23 @@ const GroupMeta = styled.div`
   opacity: 0.8;
 `
 
+const ProgressBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 700;
+`
+
 interface CardGridProps {
   cards: Card[]
   groupName?: string
   groupColor?: string
   groupRating?: number
   groupReward?: number
+  groupTotal?: number
 }
 
 export default function CardGrid({
@@ -154,11 +165,14 @@ export default function CardGrid({
   groupColor,
   groupRating,
   groupReward,
+  groupTotal,
 }: CardGridProps) {
   const columns = 3
   const remainder = cards.length % columns
   const placeholders = remainder === 0 ? 0 : columns - remainder
   const slots: (Card | null)[] = [...cards, ...Array(placeholders).fill(null)]
+  const collected = cards.length
+  const total = groupTotal ?? collected
 
   return (
     <div style={{ width: '100%' }}>
@@ -166,6 +180,9 @@ export default function CardGrid({
         <span>{groupName}</span>
         <GroupMeta>
           <span>Рейтинг: {groupRating ?? '—'}</span>
+          <ProgressBadge>
+            {collected}/{total}
+          </ProgressBadge>
           <RewardBadge $accent={groupColor}>
             <img src={starIcon} alt="star" width={16} height={16} />
             <span>{groupReward ?? 0}</span>
