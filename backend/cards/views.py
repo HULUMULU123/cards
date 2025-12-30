@@ -359,12 +359,11 @@ class CollectionView(APIView):
         templates = list(selected_group.templates.all())
         if not templates:
             return Response({'detail': 'В выбранной группе нет карточек'}, status=status.HTTP_400_BAD_REQUEST)
-        templates_total = len(templates)
-
         template = random.choice(templates)
 
         reward_amount = 0
-        group_completed = False
+        rows_completed = 0
+        row_size = 3
 
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
@@ -404,8 +403,10 @@ class CollectionView(APIView):
                 .distinct()
                 .count()
             )
-            group_completed = prev_unique < templates_total and new_unique == templates_total
-            reward_amount = (selected_group.row_reward or 0) if group_completed else 0
+            prev_rows = prev_unique // row_size
+            new_rows = new_unique // row_size
+            rows_completed = max(new_rows - prev_rows, 0)
+            reward_amount = (selected_group.row_reward or 0) * rows_completed
 
             profile.cards_opened = models.F('cards_opened') + 1
             if external_balance is not None:
@@ -422,7 +423,7 @@ class CollectionView(APIView):
             profile.save(update_fields=update_fields)
             profile.refresh_from_db()
 
-        if group_completed and reward_amount > 0 and telegram_id:
+        if rows_completed > 0 and reward_amount > 0 and telegram_id:
             credit_external_balance(telegram_id, reward_amount)
             refreshed_balance = fetch_external_balance(telegram_id)
             if refreshed_balance is not None:
