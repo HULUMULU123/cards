@@ -40,7 +40,7 @@ class CardSerializer(serializers.ModelSerializer):
     animation_url = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
-    template_id = serializers.IntegerField(source='template_id', read_only=True)
+    template_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = CollectionCard
