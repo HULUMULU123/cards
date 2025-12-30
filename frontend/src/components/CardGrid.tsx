@@ -200,6 +200,7 @@ export default function CardGrid({
   const collected = cards.length
   const total = groupTotal ?? collected
   const rowRewards = groupRowRewards ?? []
+  const displayRowRewards = rowRewards.length > 0 ? [...rowRewards].reverse() : []
   const totalRows = rowRewards.length > 0 ? rowRewards.length : Math.max(1, Math.ceil(total / columns))
   const badgeReward =
     rowRewards.length > 0 ? rowRewards.reduce((sum, reward) => sum + reward, 0) : 0
@@ -258,7 +259,7 @@ export default function CardGrid({
         {rows.map((row, rowIndex) => (
           <Row key={`row-${rowIndex}`} $accent={groupColor}>
             <RowReward $accent={groupColor}>
-              Награда за ряд: {rowRewards[rowIndex] ?? 0}
+              Награда за ряд: {displayRowRewards[rowIndex] ?? 0}
             </RowReward>
             <Grid>
               {row.map((card, index) => {
