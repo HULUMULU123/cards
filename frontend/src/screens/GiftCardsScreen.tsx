@@ -104,6 +104,15 @@ const CardSubtitle = styled.p`
   text-align: center;
 `
 
+const PriceNote = styled.p`
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`
+
 const OpenButton = styled.button`
   min-width: 65%;
   max-width: 280px;
@@ -264,6 +273,12 @@ export default function GiftCardsScreen() {
           <CardImage src={giftPack} alt="pack" />
           <CardTitle>Откройте набор карт</CardTitle>
           <CardSubtitle>Каждая группа имеет свой шанс выпадения</CardSubtitle>
+          {price > 0 && (
+            <PriceNote>
+              Стоимость открытия: {price}
+              <img src={starIcon} alt="star" width={14} height={14} />
+            </PriceNote>
+          )}
           <OpenButton onClick={handleOpenCard} disabled={opening}>
             {canAfford ? buttonLabel : 'Недостаточно звёзд'}
           </OpenButton>
