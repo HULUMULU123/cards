@@ -1,3 +1,4 @@
+import React, { useRef } from 'react'
 import styled from 'styled-components'
 
 import { Card } from '../types/entities'
@@ -32,6 +33,7 @@ const CardSlot = styled.div<{ $placeholder?: boolean }>`
       ? 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))'
       : 'none'};
   opacity: ${(props) => (props.$placeholder ? 0.35 : 1)};
+  touch-action: pan-y;
 `
 
 const Quantity = styled.div`
@@ -157,6 +159,7 @@ interface CardGridProps {
   groupRating?: number
   groupReward?: number
   groupTotal?: number
+  onCardOpen?: (card: Card) => void
 }
 
 export default function CardGrid({
@@ -166,6 +169,7 @@ export default function CardGrid({
   groupRating,
   groupReward,
   groupTotal,
+  onCardOpen,
 }: CardGridProps) {
   const columns = 3
   const remainder = cards.length % columns
@@ -173,6 +177,35 @@ export default function CardGrid({
   const slots: (Card | null)[] = [...cards, ...Array(placeholders).fill(null)]
   const collected = cards.length
   const total = groupTotal ?? collected
+  const pointerRef = useRef<{ x: number; y: number; time: number; id: number } | null>(null)
+  const movedRef = useRef(false)
+
+  const handlePointerDown = (event: React.PointerEvent) => {
+    if (!onCardOpen) return
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    pointerRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      time: Date.now(),
+      id: event.pointerId,
+    }
+    movedRef.current = false
+  }
+
+  const handlePointerMove = (event: React.PointerEvent) => {
+    const start = pointerRef.current
+    if (!start || start.id !== event.pointerId) return
+    const dx = Math.abs(event.clientX - start.x)
+    const dy = Math.abs(event.clientY - start.y)
+    if (dx > 8 || dy > 8) {
+      movedRef.current = true
+    }
+  }
+
+  const handlePointerCancel = () => {
+    pointerRef.current = null
+    movedRef.current = false
+  }
 
   return (
     <div style={{ width: '100%' }}>
@@ -196,7 +229,22 @@ export default function CardGrid({
               return <CardSlot key={`placeholder-${index}`} $placeholder />
             }
             return (
-              <CardSlot key={card.id}>
+              <CardSlot
+                key={card.id}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerCancel={handlePointerCancel}
+                onPointerUp={(event) => {
+                  const start = pointerRef.current
+                  if (!start || start.id !== event.pointerId) return
+                  const elapsed = Date.now() - start.time
+                  const isTap = !movedRef.current && elapsed < 280
+                  pointerRef.current = null
+                  if (isTap && onCardOpen) {
+                    onCardOpen(card)
+                  }
+                }}
+              >
                 {card.image_url ? (
                   <BGImage src={card.image_url} alt={card.title} loading="lazy" decoding="async" />
                 ) : (

@@ -11,5 +11,10 @@ export  const GlobalStyles = createGlobalStyle`
 
   body {
     font-family: 'Montseratt', sans-serif;
+    touch-action: pan-y;
+  }
+
+  html {
+    touch-action: pan-y;
   }
 `;

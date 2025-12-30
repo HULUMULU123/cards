@@ -1,10 +1,12 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 
 import CardGrid from '../components/CardGrid'
+import CardPreviewModal from '../components/CardPreviewModal'
 import useAuthStore from '../store/useAuthStore'
 import ReferralBadge from '../components/ReferralBadge'
+import { Card } from '../types/entities'
 
 const Screen = styled.section`
   display: flex;
@@ -48,6 +50,7 @@ export default function CollectionScreen() {
   const fetchCollection = useAuthStore((state) => state.fetchCollection)
   const profile = useAuthStore((state) => state.profile)
   const navigate = useNavigate()
+  const [previewCard, setPreviewCard] = useState<Card | null>(null)
 
   useEffect(() => {
     void fetchCollection()
@@ -96,6 +99,7 @@ export default function CollectionScreen() {
                 groupRating={group.rating}
                 groupReward={group.reward}
                 groupTotal={group.total}
+                onCardOpen={(card) => setPreviewCard(card)}
               />
             </div>
           ))
@@ -103,6 +107,9 @@ export default function CollectionScreen() {
           <EmptyState>Карточек пока нет</EmptyState>
         )}
       </Container>
+      {previewCard && (
+        <CardPreviewModal card={previewCard} onClose={() => setPreviewCard(null)} />
+      )}
     </Screen>
   )
 }
