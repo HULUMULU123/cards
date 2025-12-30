@@ -6,7 +6,7 @@ import starIcon from '../assets/icons/star.svg'
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   justify-items: center;
@@ -109,8 +109,10 @@ const Row = styled.div<{ $accent?: string }>`
 
 const RowReward = styled.span<{ $accent?: string }>`
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: -8px;
+  right: 8px;
+  z-index: 2;
+  pointer-events: none;
   font-size: 10px;
   padding: 4px 6px;
   border-radius: 999px;
