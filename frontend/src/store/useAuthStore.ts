@@ -40,7 +40,7 @@ const fallbackCards: Card[] = [
   {
     id: 'demo-1',
     title: 'Демо-карточка',
-    rarity: 'epic',
+    rank: 4,
     quantity: 1,
     image_url: fallbackCardImage,
   },

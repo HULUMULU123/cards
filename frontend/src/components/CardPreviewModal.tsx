@@ -68,6 +68,9 @@ interface CardPreviewModalProps {
 
 export default function CardPreviewModal({ card, onClose }: CardPreviewModalProps) {
   const imageUrl = card.image_url || fallbackCardImage
+  const subtitle =
+    card.group?.name ||
+    (card.rank != null ? `Ранг ${card.rank}` : card.rarity ? card.rarity : '')
   return createPortal(
     <Backdrop onClick={onClose}>
       <Modal onClick={(event) => event.stopPropagation()}>
@@ -76,7 +79,7 @@ export default function CardPreviewModal({ card, onClose }: CardPreviewModalProp
         </CloseButton>
         <Image src={imageUrl} alt={card.title} loading="lazy" decoding="async" />
         <Title>{card.title}</Title>
-        <Subtitle>{card.group?.name || card.rarity}</Subtitle>
+        <Subtitle>{subtitle}</Subtitle>
       </Modal>
     </Backdrop>,
     document.body,

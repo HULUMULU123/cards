@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import CardGroup, CardSettings, CardTemplate, CollectionCard, UserProfile, WithdrawRequest
+from .models import (
+    CardGroup,
+    CardGroupRow,
+    CardSettings,
+    CardTemplate,
+    CollectionCard,
+    UserProfile,
+    WithdrawRequest,
+)
 
 admin.site.site_header = 'Администрирование карточек'
 admin.site.site_title = 'Админка карточек'
@@ -21,10 +29,16 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(CollectionCard)
 class CollectionCardAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'rarity', 'quantity')
-    list_filter = ('rarity',)
+    list_display = ('user', 'title', 'rank', 'quantity')
     search_fields = ('title', 'user__username')
-    fields = ('user', 'title', 'rarity', 'quantity', 'image', 'animation', 'template')
+    fields = ('user', 'title', 'rank', 'quantity', 'image', 'animation', 'template')
+
+
+class CardGroupRowInline(admin.TabularInline):
+    model = CardGroupRow
+    extra = 0
+    fields = ('index', 'reward')
+    ordering = ('index',)
 
 
 @admin.register(WithdrawRequest)
@@ -36,17 +50,19 @@ class WithdrawRequestAdmin(admin.ModelAdmin):
 
 @admin.register(CardTemplate)
 class CardTemplateAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in CardTemplate._meta.fields]
-    list_filter = ('title',)
+    list_display = ('title', 'rank', 'group')
+    list_filter = ('group',)
     search_fields = ('title',)
+    fields = ('title', 'rank', 'group', 'image', 'animation')
 
 
 @admin.register(CardGroup)
 class CardGroupAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in CardGroup._meta.fields]
+    list_display = ('name', 'drop_chance', 'color', 'rating', 'rows_count')
     list_filter = ('name',)
     search_fields = ('name',)
-    list_editable = ('drop_chance', 'color', 'rating', 'row_reward')
+    list_editable = ('drop_chance', 'color', 'rating', 'rows_count')
+    inlines = [CardGroupRowInline]
 
 
 @admin.register(CardSettings)

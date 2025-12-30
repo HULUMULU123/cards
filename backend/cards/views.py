@@ -16,6 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
     CardGroup,
+    CardGroupRow,
     CardSettings,
     CardTemplate,
     CollectionCard,
@@ -310,15 +311,26 @@ class CollectionView(APIView):
         cards = (
             CollectionCard.objects.filter(user=request.user)
             .select_related('template', 'template__group')
-            .order_by('title')
+            .order_by('-template__rank', 'title')
         )
         group_totals = dict(
             CardTemplate.objects.values('group_id')
             .annotate(total=models.Count('id'))
             .values_list('group_id', 'total')
         )
+        group_rows = {}
+        for group_id, reward in CardGroupRow.objects.values_list('group_id', 'reward').order_by(
+            'group_id', 'index'
+        ):
+            group_rows.setdefault(group_id, []).append(reward)
         serializer = CardSerializer(
-            cards, many=True, context={'request': request, 'group_totals': group_totals}
+            cards,
+            many=True,
+            context={
+                'request': request,
+                'group_totals': group_totals,
+                'group_rows': group_rows,
+            },
         )
         return Response({'cards': serializer.data})
 
@@ -364,6 +376,9 @@ class CollectionView(APIView):
         reward_amount = 0
         rows_completed = 0
         row_size = 3
+        total_rows = selected_group.rows_count or 0
+        if total_rows <= 0:
+            total_rows = (len(templates) + row_size - 1) // row_size
 
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
@@ -387,6 +402,7 @@ class CollectionView(APIView):
                 defaults={
                     'title': template.title,
                     'rarity': template.rarity,
+                    'rank': template.rank,
                     'image': template.image,
                     'animation': template.animation,
                 },
@@ -403,10 +419,18 @@ class CollectionView(APIView):
                 .distinct()
                 .count()
             )
-            prev_rows = prev_unique // row_size
-            new_rows = new_unique // row_size
+            prev_rows = min(prev_unique // row_size, total_rows)
+            new_rows = min(new_unique // row_size, total_rows)
             rows_completed = max(new_rows - prev_rows, 0)
-            reward_amount = (selected_group.row_reward or 0) * rows_completed
+            if rows_completed > 0:
+                reward_amount = (
+                    CardGroupRow.objects.filter(
+                        group=selected_group,
+                        index__gt=prev_rows,
+                        index__lte=new_rows,
+                    ).aggregate(total=models.Sum('reward'))['total']
+                    or 0
+                )
 
             profile.cards_opened = models.F('cards_opened') + 1
             if external_balance is not None:

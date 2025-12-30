@@ -23,7 +23,8 @@ export interface UserProfile {
 export interface Card {
   id: string
   title: string
-  rarity: string
+  rarity?: string
+  rank?: number
   quantity: number
   image_url?: string
   animation_url?: string
@@ -33,6 +34,8 @@ export interface Card {
     rating?: number
     drop_chance?: number
     row_reward?: number
+    rows_count?: number
+    row_rewards?: number[]
     total_templates?: number
   } | null
 }

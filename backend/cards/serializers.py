@@ -39,6 +39,7 @@ class CardSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     animation_url = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
 
     class Meta:
         model = CollectionCard
@@ -46,6 +47,7 @@ class CardSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'rarity',
+            'rank',
             'quantity',
             'image_url',
             'animation_url',
@@ -75,17 +77,30 @@ class CardSerializer(serializers.ModelSerializer):
             return None
         group = obj.template.group
         group_totals = self.context.get('group_totals') or {}
+        group_rows = self.context.get('group_rows') or {}
+        row_rewards = group_rows.get(group.id)
         total_templates = group_totals.get(group.id)
-        if total_templates is None:
+        if group.rows_count:
+            total_templates = group.rows_count * 3
+        elif total_templates is None:
             total_templates = group.templates.count()
+        if row_rewards is None:
+            row_rewards = list(group.rows.order_by('index').values_list('reward', flat=True))
         return {
             'name': group.name,
             'color': group.color,
             'rating': group.rating,
             'drop_chance': group.drop_chance,
             'row_reward': group.row_reward,
+            'rows_count': group.rows_count,
+            'row_rewards': row_rewards,
             'total_templates': total_templates,
         }
+
+    def get_rank(self, obj):
+        if obj.template and obj.template.rank is not None:
+            return obj.template.rank
+        return obj.rank
 
 
 class WithdrawRequestSerializer(serializers.ModelSerializer):

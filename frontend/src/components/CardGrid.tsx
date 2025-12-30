@@ -181,6 +181,7 @@ interface CardGridProps {
   groupColor?: string
   groupRating?: number
   groupReward?: number
+  groupRowRewards?: number[]
   groupTotal?: number
   onCardOpen?: (card: Card) => void
 }
@@ -191,21 +192,12 @@ export default function CardGrid({
   groupColor,
   groupRating,
   groupReward,
+  groupRowRewards,
   groupTotal,
   onCardOpen,
 }: CardGridProps) {
   const columns = 3
-  const rarityOrder: Record<string, number> = {
-    legendary: 4,
-    epic: 3,
-    rare: 2,
-    common: 1,
-  }
-  const sortedCards = [...cards].sort((a, b) => {
-    const aRank = rarityOrder[a.rarity] ?? 0
-    const bRank = rarityOrder[b.rarity] ?? 0
-    return bRank - aRank
-  })
+  const sortedCards = [...cards].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
   const rows: (Card | null)[][] = []
   for (let i = 0; i < sortedCards.length; i += columns) {
     const row = sortedCards.slice(i, i + columns)
@@ -217,6 +209,8 @@ export default function CardGrid({
   }
   const collected = cards.length
   const total = groupTotal ?? collected
+  const rowRewards = groupRowRewards ?? []
+  const badgeReward = rowRewards.length > 0 ? Math.max(...rowRewards) : groupReward ?? 0
   const pointerRef = useRef<{ x: number; y: number; time: number; id: number } | null>(null)
   const movedRef = useRef(false)
 
@@ -258,14 +252,16 @@ export default function CardGrid({
           </ProgressBadge>
           <RewardBadge $accent={groupColor}>
             <img src={starIcon} alt="star" width={16} height={16} />
-            <span>{groupReward ?? 0}</span>
+            <span>{badgeReward}</span>
           </RewardBadge>
         </GroupMeta>
       </GroupTitle>
       <Rows>
         {rows.map((row, rowIndex) => (
           <Row key={`row-${rowIndex}`} $accent={groupColor}>
-            <RowReward $accent={groupColor}>Награда за ряд: {groupReward ?? 0}</RowReward>
+            <RowReward $accent={groupColor}>
+              Награда за ряд: {rowRewards[rowIndex] ?? groupReward ?? 0}
+            </RowReward>
             <Grid>
               {row.map((card, index) => {
                 if (!card) {

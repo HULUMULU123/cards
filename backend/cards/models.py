@@ -58,6 +58,7 @@ class CardGroup(models.Model):
     rating = models.FloatField(
         default=1.0, help_text='Рейтинг группы (0.5 - 10)', verbose_name='Рейтинг'
     )
+    rows_count = models.PositiveIntegerField(default=0, verbose_name='Количество рядов')
     row_reward = models.PositiveIntegerField(
         default=0, verbose_name='Награда за собранный ряд'
     )
@@ -68,6 +69,28 @@ class CardGroup(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.drop_chance})"
+
+
+class CardGroupRow(models.Model):
+    group = models.ForeignKey(
+        CardGroup,
+        on_delete=models.CASCADE,
+        related_name='rows',
+        verbose_name='Группа',
+    )
+    index = models.PositiveIntegerField(verbose_name='Номер ряда')
+    reward = models.PositiveIntegerField(default=0, verbose_name='Награда за ряд')
+
+    class Meta:
+        verbose_name = 'Ряд группы'
+        verbose_name_plural = 'Ряды групп'
+        ordering = ('index',)
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'index'], name='unique_group_row_index')
+        ]
+
+    def __str__(self):
+        return f"{self.group.name} - ряд {self.index}"
 
 
 class CardTemplate(models.Model):
@@ -83,6 +106,7 @@ class CardTemplate(models.Model):
         default='common',
         verbose_name='Редкость',
     )
+    rank = models.FloatField(default=1.0, verbose_name='Ранг')
     group = models.ForeignKey(
         CardGroup,
         on_delete=models.CASCADE,
@@ -136,6 +160,7 @@ class CollectionCard(models.Model):
     rarity = models.CharField(
         max_length=32, choices=RARITY_CHOICES, default='common', verbose_name='Редкость'
     )
+    rank = models.FloatField(default=1.0, verbose_name='Ранг')
     image = models.ImageField(upload_to='cards/', blank=True, null=True, verbose_name='Изображение')
     animation = models.FileField(
         upload_to='cards/animations/',

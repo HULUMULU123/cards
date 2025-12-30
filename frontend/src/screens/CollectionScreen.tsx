@@ -59,7 +59,14 @@ export default function CollectionScreen() {
   const grouped = useMemo(() => {
     const map = new Map<
       string,
-      { cards: typeof cards; color?: string; rating?: number; reward?: number; total?: number }
+      {
+        cards: typeof cards
+        color?: string
+        rating?: number
+        reward?: number
+        rowRewards?: number[]
+        total?: number
+      }
     >()
     cards.forEach((card) => {
       const key = card.group?.name || 'Без группы'
@@ -69,6 +76,7 @@ export default function CollectionScreen() {
           color: card.group?.color,
           rating: card.group?.rating,
           reward: card.group?.row_reward,
+          rowRewards: card.group?.row_rewards,
           total: card.group?.total_templates,
         })
       }
@@ -98,6 +106,7 @@ export default function CollectionScreen() {
                 groupColor={group.color}
                 groupRating={group.rating}
                 groupReward={group.reward}
+                groupRowRewards={group.rowRewards}
                 groupTotal={group.total}
                 onCardOpen={(card) => setPreviewCard(card)}
               />
