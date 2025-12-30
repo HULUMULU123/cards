@@ -63,7 +63,6 @@ export default function CollectionScreen() {
         cards: typeof cards
         color?: string
         rating?: number
-        reward?: number
         rowRewards?: number[]
         total?: number
       }
@@ -75,7 +74,6 @@ export default function CollectionScreen() {
           cards: [],
           color: card.group?.color,
           rating: card.group?.rating,
-          reward: card.group?.row_reward,
           rowRewards: card.group?.row_rewards,
           total: card.group?.total_templates,
         })
@@ -105,7 +103,6 @@ export default function CollectionScreen() {
                 groupName={group.name}
                 groupColor={group.color}
                 groupRating={group.rating}
-                groupReward={group.reward}
                 groupRowRewards={group.rowRewards}
                 groupTotal={group.total}
                 onCardOpen={(card) => setPreviewCard(card)}

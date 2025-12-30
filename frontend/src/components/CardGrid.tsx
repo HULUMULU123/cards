@@ -180,7 +180,6 @@ interface CardGridProps {
   groupName?: string
   groupColor?: string
   groupRating?: number
-  groupReward?: number
   groupRowRewards?: number[]
   groupTotal?: number
   onCardOpen?: (card: Card) => void
@@ -191,7 +190,6 @@ export default function CardGrid({
   groupName,
   groupColor,
   groupRating,
-  groupReward,
   groupRowRewards,
   groupTotal,
   onCardOpen,
@@ -210,7 +208,7 @@ export default function CardGrid({
   const collected = cards.length
   const total = groupTotal ?? collected
   const rowRewards = groupRowRewards ?? []
-  const badgeReward = rowRewards.length > 0 ? Math.max(...rowRewards) : groupReward ?? 0
+  const badgeReward = rowRewards.length > 0 ? Math.max(...rowRewards) : 0
   const pointerRef = useRef<{ x: number; y: number; time: number; id: number } | null>(null)
   const movedRef = useRef(false)
 
@@ -260,7 +258,7 @@ export default function CardGrid({
         {rows.map((row, rowIndex) => (
           <Row key={`row-${rowIndex}`} $accent={groupColor}>
             <RowReward $accent={groupColor}>
-              Награда за ряд: {rowRewards[rowIndex] ?? groupReward ?? 0}
+              Награда за ряд: {rowRewards[rowIndex] ?? 0}
             </RowReward>
             <Grid>
               {row.map((card, index) => {

@@ -90,7 +90,6 @@ class CardSerializer(serializers.ModelSerializer):
             'color': group.color,
             'rating': group.rating,
             'drop_chance': group.drop_chance,
-            'row_reward': group.row_reward,
             'rows_count': group.rows_count,
             'row_rewards': row_rewards,
             'total_templates': total_templates,

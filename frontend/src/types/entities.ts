@@ -33,7 +33,6 @@ export interface Card {
     color?: string
     rating?: number
     drop_chance?: number
-    row_reward?: number
     rows_count?: number
     row_rewards?: number[]
     total_templates?: number

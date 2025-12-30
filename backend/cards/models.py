@@ -65,10 +65,6 @@ class CardGroup(models.Model):
     row_reward_max = models.PositiveIntegerField(
         blank=True, null=True, verbose_name='Максимальная награда за ряд'
     )
-    row_reward = models.PositiveIntegerField(
-        default=0, verbose_name='Награда за собранный ряд'
-    )
-
     class Meta:
         verbose_name = 'Группа карточек'
         verbose_name_plural = 'Группы карточек'
@@ -87,8 +83,7 @@ class CardGroup(models.Model):
                     return [max_reward]
                 step = (max_reward - min_reward) / (self.rows_count - 1)
                 return [int(round(min_reward + step * index)) for index in range(self.rows_count)]
-        row_rewards = list(self.rows.order_by('index').values_list('reward', flat=True))
-        return row_rewards
+        return list(self.rows.order_by('index').values_list('reward', flat=True))
 
 
 class CardGroupRow(models.Model):

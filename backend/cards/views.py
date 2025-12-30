@@ -420,7 +420,7 @@ class CollectionView(APIView):
                 if row_rewards:
                     reward_amount = sum(row_rewards[prev_rows:new_rows])
                 else:
-                    reward_amount = (selected_group.row_reward or 0) * rows_completed
+                    reward_amount = 0
 
             profile.cards_opened = models.F('cards_opened') + 1
             if external_balance is not None:
