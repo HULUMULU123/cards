@@ -197,18 +197,18 @@ export default function CardGrid({
   const columns = 3
   const sortedCards = [...cards].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
   const rows: (Card | null)[][] = []
-  for (let i = 0; i < sortedCards.length; i += columns) {
-    const row = sortedCards.slice(i, i + columns)
-    while (row.length < columns) row.push(null)
-    rows.push(row)
-  }
-  if (rows.length === 0) {
-    rows.push(Array(columns).fill(null))
-  }
   const collected = cards.length
   const total = groupTotal ?? collected
   const rowRewards = groupRowRewards ?? []
-  const badgeReward = rowRewards.length > 0 ? Math.max(...rowRewards) : 0
+  const totalRows = rowRewards.length > 0 ? rowRewards.length : Math.max(1, Math.ceil(total / columns))
+  const badgeReward =
+    rowRewards.length > 0 ? rowRewards.reduce((sum, reward) => sum + reward, 0) : 0
+  for (let rowIndex = 0; rowIndex < totalRows; rowIndex += 1) {
+    const start = rowIndex * columns
+    const row = sortedCards.slice(start, start + columns)
+    while (row.length < columns) row.push(null)
+    rows.push(row)
+  }
   const pointerRef = useRef<{ x: number; y: number; time: number; id: number } | null>(null)
   const movedRef = useRef(false)
 
