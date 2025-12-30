@@ -16,7 +16,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
     CardGroup,
-    CardGroupRow,
     CardSettings,
     CardTemplate,
     CollectionCard,
@@ -318,18 +317,12 @@ class CollectionView(APIView):
             .annotate(total=models.Count('id'))
             .values_list('group_id', 'total')
         )
-        group_rows = {}
-        for group_id, reward in CardGroupRow.objects.values_list('group_id', 'reward').order_by(
-            'group_id', 'index'
-        ):
-            group_rows.setdefault(group_id, []).append(reward)
         serializer = CardSerializer(
             cards,
             many=True,
             context={
                 'request': request,
                 'group_totals': group_totals,
-                'group_rows': group_rows,
             },
         )
         return Response({'cards': serializer.data})
@@ -376,7 +369,8 @@ class CollectionView(APIView):
         reward_amount = 0
         rows_completed = 0
         row_size = 3
-        total_rows = selected_group.rows_count or 0
+        row_rewards = selected_group.get_row_rewards()
+        total_rows = selected_group.rows_count or len(row_rewards)
         if total_rows <= 0:
             total_rows = (len(templates) + row_size - 1) // row_size
 
@@ -423,14 +417,10 @@ class CollectionView(APIView):
             new_rows = min(new_unique // row_size, total_rows)
             rows_completed = max(new_rows - prev_rows, 0)
             if rows_completed > 0:
-                reward_amount = (
-                    CardGroupRow.objects.filter(
-                        group=selected_group,
-                        index__gt=prev_rows,
-                        index__lte=new_rows,
-                    ).aggregate(total=models.Sum('reward'))['total']
-                    or 0
-                )
+                if row_rewards:
+                    reward_amount = sum(row_rewards[prev_rows:new_rows])
+                else:
+                    reward_amount = (selected_group.row_reward or 0) * rows_completed
 
             profile.cards_opened = models.F('cards_opened') + 1
             if external_balance is not None:

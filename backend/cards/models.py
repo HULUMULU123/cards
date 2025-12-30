@@ -59,6 +59,12 @@ class CardGroup(models.Model):
         default=1.0, help_text='Рейтинг группы (0.5 - 10)', verbose_name='Рейтинг'
     )
     rows_count = models.PositiveIntegerField(default=0, verbose_name='Количество рядов')
+    row_reward_min = models.PositiveIntegerField(
+        blank=True, null=True, verbose_name='Минимальная награда за ряд'
+    )
+    row_reward_max = models.PositiveIntegerField(
+        blank=True, null=True, verbose_name='Максимальная награда за ряд'
+    )
     row_reward = models.PositiveIntegerField(
         default=0, verbose_name='Награда за собранный ряд'
     )
@@ -69,6 +75,20 @@ class CardGroup(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.drop_chance})"
+
+    def get_row_rewards(self):
+        if self.rows_count and self.rows_count > 0:
+            if self.row_reward_min is not None or self.row_reward_max is not None:
+                min_reward = self.row_reward_min or 0
+                max_reward = (
+                    self.row_reward_max if self.row_reward_max is not None else min_reward
+                )
+                if self.rows_count == 1:
+                    return [max_reward]
+                step = (max_reward - min_reward) / (self.rows_count - 1)
+                return [int(round(min_reward + step * index)) for index in range(self.rows_count)]
+        row_rewards = list(self.rows.order_by('index').values_list('reward', flat=True))
+        return row_rewards
 
 
 class CardGroupRow(models.Model):

@@ -58,10 +58,25 @@ class CardTemplateAdmin(admin.ModelAdmin):
 
 @admin.register(CardGroup)
 class CardGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'drop_chance', 'color', 'rating', 'rows_count')
+    list_display = (
+        'name',
+        'drop_chance',
+        'color',
+        'rating',
+        'rows_count',
+        'row_reward_min',
+        'row_reward_max',
+    )
     list_filter = ('name',)
     search_fields = ('name',)
-    list_editable = ('drop_chance', 'color', 'rating', 'rows_count')
+    list_editable = (
+        'drop_chance',
+        'color',
+        'rating',
+        'rows_count',
+        'row_reward_min',
+        'row_reward_max',
+    )
     inlines = [CardGroupRowInline]
 
 

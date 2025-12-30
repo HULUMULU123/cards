@@ -20,6 +20,16 @@ class Migration(migrations.Migration):
             name='rows_count',
             field=models.PositiveIntegerField(default=0, verbose_name='Количество рядов'),
         ),
+        migrations.AddField(
+            model_name='cardgroup',
+            name='row_reward_min',
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='Минимальная награда за ряд'),
+        ),
+        migrations.AddField(
+            model_name='cardgroup',
+            name='row_reward_max',
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='Максимальная награда за ряд'),
+        ),
         migrations.CreateModel(
             name='CardGroupRow',
             fields=[
