@@ -63,6 +63,8 @@ def verify_telegram_init_data(init_data: str) -> Optional[dict]:
     """
     if not init_data:
         return None
+    if not getattr(settings, 'TELEGRAM_BOT_TOKEN', ''):
+        return None
 
     # Разбор строки вида "query_id=...&user=...&auth_date=...&hash=..."
     data = dict(parse_qsl(init_data, keep_blank_values=True))

@@ -64,13 +64,61 @@ const Content = styled.main`
   padding-bottom: 96px;
 `
 
+const BlockedScreen = styled.section`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: #f2f2f2;
+`
+
+const BlockedCard = styled.div`
+  max-width: 420px;
+  background: rgba(12, 8, 20, 0.95);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 28px 52px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+`
+
+const BlockedTitle = styled.h2`
+  margin: 0 0 12px;
+  font-size: 22px;
+`
+
+const BlockedText = styled.p`
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+`
+
 export default function App() {
   const location = useLocation()
   const appReady = useAuthStore((state) => state.appReady)
+  const authBlocked = useAuthStore((state) => state.authBlocked)
+  const authMessage = useAuthStore((state) => state.authMessage)
   useTelegramAuth()
 
   if (!appReady) {
     return <LoadingScreen />
+  }
+
+  if (authBlocked) {
+    return (
+      <>
+        <GlobalStyles />
+        <BlockedScreen>
+          <BlockedCard>
+            <BlockedTitle>Доступ ограничен</BlockedTitle>
+            <BlockedText>
+              {authMessage || 'Откройте приложение через официального Telegram бота.'}
+            </BlockedText>
+          </BlockedCard>
+        </BlockedScreen>
+      </>
+    )
   }
 
   return (

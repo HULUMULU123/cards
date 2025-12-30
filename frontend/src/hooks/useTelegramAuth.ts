@@ -8,12 +8,13 @@ export default function useTelegramAuth() {
   const initialize = useAuthStore((state) => state.initialize)
 
   useEffect(() => {
-    if (!webApp) return
-
-    // обозначаем готовность веб-приложения Telegram
-    webApp.ready?.()
-
-    void initialize(webApp)
+    if (webApp) {
+      // обозначаем готовность веб-приложения Telegram
+      webApp.ready?.()
+      void initialize(webApp)
+      return
+    }
+    void initialize(null)
   }, [webApp, initialize])
 
   return useMemo(
@@ -24,4 +25,3 @@ export default function useTelegramAuth() {
     [webApp],
   )
 }
-

@@ -56,6 +56,8 @@ interface AuthState {
   loading: boolean
   error: string | null
   appReady: boolean
+  authBlocked: boolean
+  authMessage: string | null
 }
 
 interface AuthActions {
@@ -79,6 +81,8 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   loading: false,
   error: null,
   appReady: false,
+  authBlocked: false,
+  authMessage: null,
 
   setToken: (token) => set({ token }),
   setError: (message) => set({ error: message }),
@@ -94,9 +98,14 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         return
       }
       const telegram = telegramInstance || window.Telegram?.WebApp
-        if (telegram?.initData) {
-          console.log('Telegram initDataUnsafe stars:', telegram.initDataUnsafe?.tg_web_app_star_count, 'initDataUnsafe:', telegram.initDataUnsafe)
-          try {
+      if (telegram?.initData) {
+        console.log(
+          'Telegram initDataUnsafe stars:',
+          telegram.initDataUnsafe?.tg_web_app_star_count,
+          'initDataUnsafe:',
+          telegram.initDataUnsafe,
+        )
+        try {
           const starsBalance = telegram.initDataUnsafe?.tg_web_app_star_count
 
           const response = await authorizeWithTelegram(telegram.initData, starsBalance)
@@ -105,16 +114,21 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
             ? { ...response.profile, user: { ...response.profile.user, photo_url: photoUrl } }
             : response.profile
 
-          set({ token: response.access, profile })
+          set({ token: response.access, profile, authBlocked: false, authMessage: null })
           telegram.ready?.()
           await get().refreshAll()
           return
         } catch (error) {
+          const message = error instanceof Error ? error.message : 'Не удалось проверить Telegram подпись'
+          set({ authBlocked: true, authMessage: message })
           console.warn('Failed to authorize via Telegram', error)
+          return
         }
       }
-      // fallback demo data for local development without Telegram
-      set({ token: null, profile: fallbackUser, collection: fallbackCards, withdrawHistory: fallbackHistory })
+      set({
+        authBlocked: true,
+        authMessage: 'Откройте приложение через официального Telegram бота',
+      })
     } finally {
       set({ appReady: true })
     }
