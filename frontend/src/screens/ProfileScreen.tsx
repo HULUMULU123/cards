@@ -178,6 +178,8 @@ export default function ProfileScreen() {
 
   const opened = profile?.cards_opened ?? 0
   const total = profile?.cards_total ?? 0
+  const collectionTotal =
+    profile?.cards_groups?.reduce((sum, group) => sum + group.count, 0) ?? opened
   const percent = total > 0 ? Math.min(100, Math.round((opened / total) * 100)) : 0
   console.log('user', profile?.user)
   return (
@@ -220,7 +222,7 @@ export default function ProfileScreen() {
               fontWeight: '600',
             }}
           >
-            {opened}
+            {collectionTotal}
           </span>
           <span style={{ fontSize: '12px', color: 'rgb(204,	186,	207)', }}>
             В коллекции
