@@ -324,7 +324,7 @@ class CollectionView(APIView):
             if total_templates == 0:
                 total_templates = len(row_rewards) * 3 if row_rewards else group.templates.count()
             templates = list(
-                group.templates.order_by('-rank', 'id').values('id', 'rank')
+                group.templates.order_by('-rank', 'id').values('id', 'rank', 'row_index')
             )
             groups_payload.append(
                 {
@@ -395,6 +395,11 @@ class CollectionView(APIView):
         total_rows = selected_group.rows_count or len(row_rewards)
         if total_rows <= 0:
             total_rows = (len(templates) + row_size - 1) // row_size
+        row_rewards_map = {index + 1: reward for index, reward in enumerate(row_rewards)}
+        row_templates = {}
+        for group_template in templates:
+            row_index = group_template.row_index or 1
+            row_templates.setdefault(row_index, []).append(group_template.id)
 
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
@@ -404,12 +409,11 @@ class CollectionView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            prev_unique = (
+            prev_owned_template_ids = set(
                 CollectionCard.objects.select_for_update()
                 .filter(user=request.user, template__group=selected_group)
-                .values('template')
+                .values_list('template_id', flat=True)
                 .distinct()
-                .count()
             )
 
             card, created = CollectionCard.objects.select_for_update().get_or_create(
@@ -429,20 +433,25 @@ class CollectionView(APIView):
                 )
                 card.refresh_from_db()
 
-            new_unique = (
-                CollectionCard.objects.filter(user=request.user, template__group=selected_group)
-                .values('template')
-                .distinct()
-                .count()
-            )
-            prev_rows = min(prev_unique // row_size, total_rows)
-            new_rows = min(new_unique // row_size, total_rows)
-            rows_completed = max(new_rows - prev_rows, 0)
+            prev_completed = set()
+            for row_index, template_ids in row_templates.items():
+                if not template_ids:
+                    continue
+                if set(template_ids).issubset(prev_owned_template_ids):
+                    prev_completed.add(row_index)
+            new_owned_template_ids = set(prev_owned_template_ids)
+            if created:
+                new_owned_template_ids.add(template.id)
+            new_completed = set()
+            for row_index, template_ids in row_templates.items():
+                if not template_ids:
+                    continue
+                if set(template_ids).issubset(new_owned_template_ids):
+                    new_completed.add(row_index)
+            completed_rows = sorted(new_completed - prev_completed)
+            rows_completed = len(completed_rows)
             if rows_completed > 0:
-                if row_rewards:
-                    reward_amount = sum(row_rewards[prev_rows:new_rows])
-                else:
-                    reward_amount = 0
+                reward_amount = sum(row_rewards_map.get(row_index, 0) for row_index in completed_rows)
 
             profile.cards_opened = models.F('cards_opened') + 1
             if external_balance is not None:

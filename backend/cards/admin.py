@@ -50,10 +50,10 @@ class WithdrawRequestAdmin(admin.ModelAdmin):
 
 @admin.register(CardTemplate)
 class CardTemplateAdmin(admin.ModelAdmin):
-    list_display = ('title', 'rank', 'group')
+    list_display = ('title', 'rank', 'row_index', 'group')
     list_filter = ('group',)
     search_fields = ('title',)
-    fields = ('title', 'rank', 'group', 'image', 'animation')
+    fields = ('title', 'rank', 'row_index', 'group', 'image', 'animation')
 
 
 @admin.register(CardGroup)

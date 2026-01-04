@@ -66,8 +66,9 @@ export default function CollectionScreen() {
           color?: string
           rating?: number
           rowRewards?: number[]
+          rowsCount?: number
           total?: number
-          templates?: { id: number; rank?: number }[]
+          templates?: { id: number; rank?: number; row_index?: number }[]
         }
       >()
       cards.forEach((card) => {
@@ -78,6 +79,7 @@ export default function CollectionScreen() {
             color: card.group?.color,
             rating: card.group?.rating,
             rowRewards: card.group?.row_rewards,
+            rowsCount: card.group?.rows_count,
             total: card.group?.total_templates,
           })
         }
@@ -109,6 +111,7 @@ export default function CollectionScreen() {
       color: group.color,
       rating: group.rating,
       rowRewards: group.row_rewards,
+      rowsCount: group.rows_count,
       total: group.total_templates,
       templates: group.templates,
     }))
@@ -119,6 +122,7 @@ export default function CollectionScreen() {
         name: 'Без группы',
         cards: ungrouped,
         rowRewards: [],
+        rowsCount: 0,
         total: ungrouped.length,
         templates: [],
       })
@@ -146,6 +150,7 @@ export default function CollectionScreen() {
                 groupColor={group.color}
                 groupRating={group.rating}
                 groupRowRewards={group.rowRewards}
+                groupRowsCount={group.rowsCount}
                 groupTotal={group.total}
                 templates={group.templates}
                 onCardOpen={(card) => setPreviewCard(card)}

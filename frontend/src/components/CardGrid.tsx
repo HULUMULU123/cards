@@ -181,8 +181,9 @@ interface CardGridProps {
   groupColor?: string
   groupRating?: number
   groupRowRewards?: number[]
+  groupRowsCount?: number
   groupTotal?: number
-  templates?: { id: number; rank?: number }[]
+  templates?: { id: number; rank?: number; row_index?: number }[]
   onCardOpen?: (card: Card) => void
 }
 
@@ -192,6 +193,7 @@ export default function CardGrid({
   groupColor,
   groupRating,
   groupRowRewards,
+  groupRowsCount,
   groupTotal,
   templates,
   onCardOpen,
@@ -208,29 +210,36 @@ export default function CardGrid({
   const collected = cards.length
   const total = groupTotal ?? collected
   const rowRewards = groupRowRewards ?? []
-  const displayRowRewards = rowRewards.length > 0 ? [...rowRewards].reverse() : []
-  const templateList = templates ? [...templates].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0)) : []
-  const totalRows =
-    rowRewards.length > 0
-      ? rowRewards.length
-      : Math.max(1, Math.ceil((templateList.length || sortedCards.length) / columns))
+  const templateList = templates ? [...templates] : []
+  const rowsCount = groupRowsCount && groupRowsCount > 0 ? groupRowsCount : rowRewards.length
+  const fallbackRows = Math.max(1, Math.ceil((templateList.length || sortedCards.length) / columns))
+  const totalRows = rowsCount > 0 ? rowsCount : fallbackRows
   const badgeReward =
-    rowRewards.length > 0 ? rowRewards.reduce((sum, reward) => sum + reward, 0) : 0
-  const totalSlots = totalRows * columns
-  if (templateList.length > 0) {
-    const slots: (Card | null)[] = []
-    for (let index = 0; index < totalSlots; index += 1) {
-      const template = templateList[index]
-      if (!template) {
-        slots.push(null)
-        continue
+    rowRewards.length > 0 ? rowRewards.slice(0, totalRows).reduce((sum, reward) => sum + reward, 0) : 0
+  const hasTemplateLayout = templates !== undefined
+  const rowIndices = Array.from({ length: totalRows }, (_, index) => totalRows - index)
+  if (hasTemplateLayout || rowsCount > 0) {
+    const templatesByRow = new Map<number, { id: number; rank?: number; row_index?: number }[]>()
+    templateList.forEach((template) => {
+      const rowIndex = template.row_index ?? 1
+      if (!templatesByRow.has(rowIndex)) {
+        templatesByRow.set(rowIndex, [])
       }
-      const card = cardsByTemplate.get(template.id) ?? null
-      slots.push(card)
-    }
-    for (let i = 0; i < slots.length; i += columns) {
-      rows.push(slots.slice(i, i + columns))
-    }
+      templatesByRow.get(rowIndex)!.push(template)
+    })
+    rowIndices.forEach((rowIndex) => {
+      const rowTemplates = [...(templatesByRow.get(rowIndex) ?? [])].sort(
+        (a, b) => (b.rank ?? 0) - (a.rank ?? 0),
+      )
+      const rowSlots: (Card | null)[] = []
+      rowTemplates.slice(0, columns).forEach((template) => {
+        rowSlots.push(cardsByTemplate.get(template.id) ?? null)
+      })
+      while (rowSlots.length < columns) {
+        rowSlots.push(null)
+      }
+      rows.push(rowSlots)
+    })
   } else {
     for (let rowIndex = 0; rowIndex < totalRows; rowIndex += 1) {
       const start = rowIndex * columns
@@ -285,54 +294,56 @@ export default function CardGrid({
         </GroupMeta>
       </GroupTitle>
       <Rows>
-        {rows.map((row, rowIndex) => (
-          <Row key={`row-${rowIndex}`} $accent={groupColor}>
-            <RowReward $accent={groupColor}>
-              Награда за ряд: {displayRowRewards[rowIndex] ?? 0}
-            </RowReward>
-            <Grid>
-              {row.map((card, index) => {
-                if (!card) {
-                  return <CardSlot key={`placeholder-${rowIndex}-${index}`} $placeholder />
-                }
-                return (
-                  <CardSlot
-                    key={card.id}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onPointerCancel={handlePointerCancel}
-                    onPointerUp={(event) => {
-                      const start = pointerRef.current
-                      if (!start || start.id !== event.pointerId) return
-                      const elapsed = Date.now() - start.time
-                      const isTap = !movedRef.current && elapsed < 280
-                      pointerRef.current = null
-                      if (isTap && onCardOpen) {
-                        onCardOpen(card)
-                      }
-                    }}
-                  >
-                    {card.image_url ? (
-                      <BGImage
-                        src={card.image_url}
-                        alt={card.title}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <Fallback />
-                    )}
-                    {card.quantity > 1 && <Quantity>{card.quantity}×</Quantity>}
-                    {/* <Info>
-                      <Title title={card.title}>{card.title}</Title>
-                      <Rarity>{card.group?.name || card.rarity}</Rarity>
-                    </Info> */}
-                  </CardSlot>
-                )
-              })}
-            </Grid>
-          </Row>
-        ))}
+        {rows.map((row, rowIndex) => {
+          const rowNumber = rowIndices[rowIndex] ?? rowIndex + 1
+          const rowReward = rowRewards[rowNumber - 1] ?? 0
+          return (
+            <Row key={`row-${rowIndex}`} $accent={groupColor}>
+              <RowReward $accent={groupColor}>Награда за ряд: {rowReward}</RowReward>
+              <Grid>
+                {row.map((card, index) => {
+                  if (!card) {
+                    return <CardSlot key={`placeholder-${rowIndex}-${index}`} $placeholder />
+                  }
+                  return (
+                    <CardSlot
+                      key={card.id}
+                      onPointerDown={handlePointerDown}
+                      onPointerMove={handlePointerMove}
+                      onPointerCancel={handlePointerCancel}
+                      onPointerUp={(event) => {
+                        const start = pointerRef.current
+                        if (!start || start.id !== event.pointerId) return
+                        const elapsed = Date.now() - start.time
+                        const isTap = !movedRef.current && elapsed < 280
+                        pointerRef.current = null
+                        if (isTap && onCardOpen) {
+                          onCardOpen(card)
+                        }
+                      }}
+                    >
+                      {card.image_url ? (
+                        <BGImage
+                          src={card.image_url}
+                          alt={card.title}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <Fallback />
+                      )}
+                      {card.quantity > 1 && <Quantity>{card.quantity}×</Quantity>}
+                      {/* <Info>
+                        <Title title={card.title}>{card.title}</Title>
+                        <Rarity>{card.group?.name || card.rarity}</Rarity>
+                      </Info> */}
+                    </CardSlot>
+                  )
+                })}
+              </Grid>
+            </Row>
+          )
+        })}
       </Rows>
     </div>
   )

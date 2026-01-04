@@ -122,6 +122,7 @@ class CardTemplate(models.Model):
         verbose_name='Редкость',
     )
     rank = models.FloatField(default=1.0, verbose_name='Ранг')
+    row_index = models.PositiveIntegerField(default=1, verbose_name='Ряд')
     group = models.ForeignKey(
         CardGroup,
         on_delete=models.CASCADE,

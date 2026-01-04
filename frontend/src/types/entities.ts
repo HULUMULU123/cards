@@ -50,7 +50,7 @@ export interface CollectionGroup {
   rows_count?: number
   row_rewards?: number[]
   total_templates?: number
-  templates: { id: number; rank?: number }[]
+  templates: { id: number; rank?: number; row_index?: number }[]
 }
 
 export interface WithdrawRequest {
