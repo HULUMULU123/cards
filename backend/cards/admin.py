@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import (
     CardGroup,
@@ -27,11 +29,31 @@ class UserProfileAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'telegram_id')
 
 
+class CollectionCardAdminForm(forms.ModelForm):
+    class Meta:
+        model = CollectionCard
+        fields = ('user', 'template', 'quantity')
+
+    def clean(self):
+        cleaned = super().clean()
+        template = cleaned.get('template')
+        if not template:
+            raise ValidationError('Выберите карточку')
+        self.instance.title = template.title
+        self.instance.rarity = template.rarity
+        self.instance.rank = template.rank
+        self.instance.image = template.image
+        self.instance.animation = template.animation
+        return cleaned
+
+
 @admin.register(CollectionCard)
 class CollectionCardAdmin(admin.ModelAdmin):
+    form = CollectionCardAdminForm
     list_display = ('user', 'title', 'rank', 'quantity')
     search_fields = ('title', 'user__username')
-    fields = ('user', 'title', 'rank', 'quantity', 'image', 'animation', 'template')
+    fields = ('user', 'template', 'quantity')
+    autocomplete_fields = ('user', 'template')
 
 
 class CardGroupRowInline(admin.TabularInline):

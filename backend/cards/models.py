@@ -138,8 +138,8 @@ class CardTemplate(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Шаблон карточки'
-        verbose_name_plural = 'Шаблоны карточек'
+        verbose_name = 'Карточка'
+        verbose_name_plural = 'Карточки'
 
     def __str__(self):
         return self.title
