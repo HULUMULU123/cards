@@ -25,10 +25,21 @@ async function request<T>(endpoint: string, { method = 'GET', body, token }: Req
     return null as T
   }
 
-  const data = (await response.json().catch(() => null)) as T | null
+  const contentType = response.headers.get('content-type') ?? ''
+  let data: T | { detail?: string } | string | null = null
+  if (contentType.includes('application/json')) {
+    data = (await response.json().catch(() => null)) as T | null
+  } else {
+    const text = await response.text().catch(() => '')
+    data = text || null
+  }
 
   if (!response.ok) {
-    const message = (data as { detail?: string } | null)?.detail || 'Ошибка при запросе к серверу'
+    const detail =
+      (data && typeof data === 'object' && 'detail' in data ? (data as { detail?: string }).detail : null) ||
+      (typeof data === 'string' ? data : null)
+    const fallback = response.statusText ? `${response.status} ${response.statusText}` : `Ошибка сервера (${response.status})`
+    const message = detail || fallback
     throw new Error(message)
   }
 

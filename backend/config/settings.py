@@ -170,3 +170,33 @@ BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'https://giftcards
 BALANCE_API_KEY = os.environ.get('BALANCE_API_KEY', 'super_secret_key')
 NOTIFY_API_BASE_URL = os.environ.get('NOTIFY_API_BASE_URL', 'https://giftcardstg.ru/withdrawals/notify')
 NOTIFY_API_KEY = os.environ.get('BALANCE_API_KEY', 'super_secret_key')
+
+LOG_LEVEL = os.environ.get('DJANGO_LOG_LEVEL', 'INFO').upper()
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
