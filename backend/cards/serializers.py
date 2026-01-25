@@ -57,19 +57,21 @@ class CardSerializer(serializers.ModelSerializer):
         )
 
     def get_image_url(self, obj):
-        if not obj.image:
+        image = obj.image or (obj.template.image if obj.template else None)
+        if not image:
             return None
         request = self.context.get('request')
-        url = obj.image.url
+        url = image.url
         if request:
             return request.build_absolute_uri(url)
         return url
 
     def get_animation_url(self, obj):
-        if not obj.animation:
+        animation = obj.animation or (obj.template.animation if obj.template else None)
+        if not animation:
             return None
         request = self.context.get('request')
-        url = obj.animation.url
+        url = animation.url
         if request:
             return request.build_absolute_uri(url)
         return url
