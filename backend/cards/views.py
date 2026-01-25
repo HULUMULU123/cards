@@ -409,12 +409,22 @@ class CollectionView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # 1) Лочим все строки коллекции пользователя в выбранной группе
+            CollectionCard.objects.select_for_update().filter(
+                user=request.user,
+                template__group=selected_group,
+            ).values("id")
+
+            # 2) Достаём уникальные template_id (уже без FOR UPDATE)
             prev_owned_template_ids = set(
-                CollectionCard.objects.select_for_update()
-                .filter(user=request.user, template__group=selected_group)
-                .values_list('template_id', flat=True)
+                CollectionCard.objects.filter(
+                    user=request.user,
+                    template__group=selected_group,
+                )
+                .values_list("template_id", flat=True)
                 .distinct()
             )
+
 
             card, created = CollectionCard.objects.select_for_update().get_or_create(
                 user=request.user,
