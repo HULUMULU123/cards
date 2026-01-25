@@ -101,7 +101,21 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         return
       }
       const telegram = telegramInstance || window.Telegram?.WebApp
-      if (telegram?.initData) {
+      if (telegram) {
+        const initData = telegram.initData
+        console.log(
+          'Telegram WebApp detected:',
+          Boolean(telegram),
+          'initData length:',
+          initData?.length ?? 0,
+        )
+        if (!initData) {
+          set({
+            authBlocked: true,
+            authMessage: 'Telegram initData отсутствует. Откройте приложение через кнопку WebApp бота.',
+          })
+          return
+        }
         console.log(
           'Telegram initDataUnsafe stars:',
           telegram.initDataUnsafe?.tg_web_app_star_count,
@@ -111,7 +125,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         try {
           const starsBalance = telegram.initDataUnsafe?.tg_web_app_star_count
 
-          const response = await authorizeWithTelegram(telegram.initData, starsBalance)
+          const response = await authorizeWithTelegram(initData, starsBalance)
           const photoUrl = telegram.initDataUnsafe?.user?.photo_url
           const profile = photoUrl
             ? { ...response.profile, user: { ...response.profile.user, photo_url: photoUrl } }

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://roodensky.online/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://giftcardstg.ru/api'
 
 interface RequestOptions {
   method?: 'GET' | 'POST'

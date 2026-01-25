@@ -126,8 +126,8 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'true').lower() == 'true'
 CORS_ALLOWED_ORIGINS = [
-    'https://roodensky.online',
-    'https://www.roodensky.online',
+    'https://giftcardstg.ru',
+    'https://www.giftcardstg.ru',
     'https://giftcardstg.ru',
     'https://www.giftcardstg.ru',
     'http://localhost:5173',
@@ -135,8 +135,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    'https://roodensky.online',
-    'https://www.roodensky.online',
+    'https://giftcardstg.ru',
+    'https://www.giftcardstg.ru',
     'https://giftcardstg.ru',
     'https://www.giftcardstg.ru',
     'http://localhost',
@@ -166,7 +166,7 @@ TELEGRAM_PAYMENT_PROVIDER_TOKEN = os.environ.get('TELEGRAM_PAYMENT_PROVIDER_TOKE
 TELEGRAM_BOT_NAME = os.environ.get('TELEGRAM_BOT_NAME', 'cards129_bot')
 
 # Внешний сервис баланса (FastAPI)
-BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'https://roodensky.online/internal-stars/user/')
+BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'https://giftcardstg.ru/internal-stars/user/')
 BALANCE_API_KEY = os.environ.get('BALANCE_API_KEY', 'super_secret_key')
-NOTIFY_API_BASE_URL = os.environ.get('NOTIFY_API_BASE_URL', 'https://roodensky.online/withdrawals/notify')
+NOTIFY_API_BASE_URL = os.environ.get('NOTIFY_API_BASE_URL', 'https://giftcardstg.ru/withdrawals/notify')
 NOTIFY_API_KEY = os.environ.get('BALANCE_API_KEY', 'super_secret_key')
