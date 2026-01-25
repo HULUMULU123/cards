@@ -128,6 +128,8 @@ CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'true').lower(
 CORS_ALLOWED_ORIGINS = [
     'https://roodensky.online',
     'https://www.roodensky.online',
+    'https://giftcardstg.ru',
+    'https://www.giftcardstg.ru',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
 ]
@@ -135,6 +137,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     'https://roodensky.online',
     'https://www.roodensky.online',
+    'https://giftcardstg.ru',
+    'https://www.giftcardstg.ru',
     'http://localhost',
     'http://127.0.0.1',
 ]
