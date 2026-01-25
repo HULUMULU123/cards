@@ -16,4 +16,4 @@ COPY . /app
 
 EXPOSE 8000
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "8", "--timeout", "60", "--max-requests", "2000", "--max-requests-jitter", "200", "--access-logfile", "-", "--error-logfile", "-"]
+ENTRYPOINT ["/app/entrypoint.sh"]
