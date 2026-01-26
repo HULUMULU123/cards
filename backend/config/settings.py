@@ -161,9 +161,9 @@ JAZZMIN_SETTINGS = {
 }
 
 # TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', 'telegram-bot-token')
-TELEGRAM_BOT_TOKEN ='8534040237:AAHaSD_aof0rOVfDDQqejxvX286oA0MC7z0'
+TELEGRAM_BOT_TOKEN ='8263164841:AAGxQbT_OtOnWdGnFUst4Qkkv_o5AQuTDSk'
 TELEGRAM_PAYMENT_PROVIDER_TOKEN = os.environ.get('TELEGRAM_PAYMENT_PROVIDER_TOKEN', 'payment-provider-token')
-TELEGRAM_BOT_NAME = os.environ.get('TELEGRAM_BOT_NAME', 'cards129_bot')
+TELEGRAM_BOT_NAME = os.environ.get('TELEGRAM_BOT_NAME', 'AlGiftCards_bot')
 
 # Внешний сервис баланса (FastAPI)
 BALANCE_API_BASE_URL = os.environ.get('BALANCE_API_BASE_URL', 'https://giftcardstg.ru/internal-stars/user/')
