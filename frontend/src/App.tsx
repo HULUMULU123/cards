@@ -8,6 +8,7 @@ import ProfileScreen from './screens/ProfileScreen'
 import WithdrawScreen from './screens/WithdrawScreen'
 import useAuthStore from './store/useAuthStore'
 import useTelegramAuth from './hooks/useTelegramAuth'
+import { getTelegramStartParam } from './lib/telegramStartParam'
 
 
 import { GlobalStyles } from './styles/globalStyles';
@@ -99,6 +100,8 @@ export default function App() {
   const appReady = useAuthStore((state) => state.appReady)
   const authBlocked = useAuthStore((state) => state.authBlocked)
   const authMessage = useAuthStore((state) => state.authMessage)
+  const startParam = getTelegramStartParam()
+  const defaultRoute = startParam === 'open_pack' ? '/menu' : '/profile'
   useTelegramAuth()
 
   if (!appReady) {
@@ -131,7 +134,7 @@ export default function App() {
           <Route path="/withdraw" element={<WithdrawScreen />} />
           <Route path="/collection" element={<CollectionScreen />} />
           <Route path="/menu" element={<GiftCardsScreen />} />
-          <Route path="*" element={<Navigate to="/profile" replace />} />
+          <Route path="*" element={<Navigate to={defaultRoute} replace />} />
         </Routes>
       </Content>
       <TabBar />

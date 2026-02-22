@@ -7,6 +7,7 @@ import starIcon from '../assets/icons/star.svg'
 import CardOpenModal from '../components/CardOpenModal'
 import BalancePill from '../components/BalancePill'
 import ReferralBadge from '../components/ReferralBadge'
+import { clearTelegramStartParamFromUrl, getTelegramStartParam } from '../lib/telegramStartParam'
 import useAuthStore from '../store/useAuthStore'
 import { Card } from '../types/entities'
 
@@ -196,6 +197,7 @@ export default function GiftCardsScreen() {
   const [opening, setOpening] = useState(false)
   const [showPriceHint, setShowPriceHint] = useState(false)
   const hintTimeoutRef = useRef<number | null>(null)
+  const autoOpenAttemptedRef = useRef(false)
 
   const price = profile?.card_open_price ?? 0
   const balance = profile?.stars_balance ?? 0
@@ -256,6 +258,17 @@ export default function GiftCardsScreen() {
       setOpening(false)
     }
   }
+
+  useEffect(() => {
+    if (autoOpenAttemptedRef.current) return
+    if (!profile) return
+    if (opening) return
+    if (getTelegramStartParam() !== 'open_pack') return
+
+    autoOpenAttemptedRef.current = true
+    clearTelegramStartParamFromUrl()
+    void handleOpenCard()
+  }, [profile, opening])
 
   return (
     <Screen>

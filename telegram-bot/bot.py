@@ -14,10 +14,10 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-BOT_USERNAME = os.getenv("BOT_USERNAME", "Pizza123421_bot")
+BOT_USERNAME = os.getenv("BOT_USERNAME", "AlGiftCards_bot")
 FREE_OPEN_URL = os.getenv(
     "FREE_OPEN_URL",
-    "https://t.me/Pizza123421_bot?startapp=open_pack",
+    "https://t.me/AlGiftCards_bot?startapp=open_pack",
 )
 ARTICLE_URL = "https://telegra.ph/Kak-zarabotat-zvezdy-v-igre-Gift-Cards-01-14-3"
 SUPPORT_URL = "https://t.me/AlekseyfrolovDm"
