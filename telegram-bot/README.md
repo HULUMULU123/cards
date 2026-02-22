@@ -16,5 +16,6 @@ python bot.py
 ```
 
 ## Notes
-- `/start` sends a static info message and three buttons.
+- `/start` sends a referral message and requests referral data (`link`, `count`, reward) from an external API.
 - `FREE_OPEN_URL` should point to your Mini App deep link that opens a pack.
+- Configure `REFERRAL_API_BASE_URL` and `REFERRAL_API_KEY` in `.env` for referral API access.
