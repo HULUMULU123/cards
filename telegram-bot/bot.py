@@ -31,12 +31,8 @@ REFERRAL_API_BASE_URL = os.getenv(
     "REFERRAL_API_BASE_URL",
     "https://giftcardstg.ru/",
 )
-REFERRAL_API_KEY = os.getenv("REFERRAL_API_KEY", os.getenv("BALANCE_API_KEY", ""))
+REFERRAL_API_KEY = os.getenv("REFERRAL_API_KEY", os.getenv("BALANCE_API_KEY", "super_secret_key"))
 DEFAULT_REFERRAL_REWARD = int(os.getenv("DEFAULT_REFERRAL_REWARD", "10"))
-
-
-def _build_default_referral_link(user_id: int) -> str:
-    return f"https://t.me/{BOT_USERNAME}?start=r{user_id}"
 
 
 def _http_get_json_or_text(url: str) -> Any | None:
@@ -133,7 +129,7 @@ def build_start_message(user_id: int, referral_data: dict[str, Any] | None) -> s
     reward_amount: float | int = DEFAULT_REFERRAL_REWARD
     reward_currency = "stars"
     referrals_count = 0
-    referral_link = _build_default_referral_link(user_id)
+    referral_link = ""
 
     if referral_data:
         reward_amount = referral_data.get("reward_amount", reward_amount)
@@ -151,10 +147,12 @@ def build_start_message(user_id: int, referral_data: dict[str, Any] | None) -> s
     else:
         reward_line = f"Получай +{reward_amount_text} ⭐️ за каждого приглашенного друга!"
 
+    referral_link_text = referral_link or "Не удалось получить реферальную ссылку. Попробуйте позже."
+
     return (
         f"{reward_line}\n\n"
         "📎 Твоя реферальная ссылка:\n"
-        f"{referral_link}\n\n"
+        f"{referral_link_text}\n\n"
         "🎉 Приглашай по этой ссылке своих друзей, отправляй её во все чаты и "
         "зарабатывай Звёзды для открытия карточек в Gift Cards!\n\n"
         f"👤 Количество ваших рефералов: {referrals_count}"
