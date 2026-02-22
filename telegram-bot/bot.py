@@ -172,7 +172,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             )
         ],
         [InlineKeyboardButton("Поддержка (@AlekseyfrolovDm)", url=SUPPORT_URL)],
-        [InlineKeyboardButton("Бесплатное открытие", url=FREE_OPEN_URL)],
+        [InlineKeyboardButton("Бесплатное открытие!", url='https://t.me/AlGiftCards_bot?startapp=open_pack')],
     ]
     await update.message.reply_text(
         START_MESSAGE,
