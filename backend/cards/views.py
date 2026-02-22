@@ -168,6 +168,20 @@ def notify_withdrawal(username: str, amount: int) -> None:
     except requests.RequestException:
         return None
 
+
+def _is_truthy(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _has_valid_internal_api_key(request) -> bool:
+    expected = getattr(settings, 'BALANCE_API_KEY', '')
+    received = request.headers.get('X-API-Key', '')
+    return bool(expected) and hmac.compare_digest(expected, received)
+
 class TelegramAuthView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -301,8 +315,26 @@ class ProfileView(APIView):
         )
         settings_instance = CardSettings.objects.first()
         base_price = settings_instance.open_price if settings_instance else 0
-        data['card_open_price'] = 0 if profile.cards_opened == 0 else base_price
+        data['card_open_price'] = 0 if not profile.free_open_used else base_price
+        data['free_open_available'] = not profile.free_open_used
         return Response(data)
+
+
+class FreeOpenStatusView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, telegram_id, *args, **kwargs):
+        if not _has_valid_internal_api_key(request):
+            return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+        profile = UserProfile.objects.filter(telegram_id=str(telegram_id)).only('free_open_used').first()
+        free_open_available = True if profile is None else not profile.free_open_used
+        return Response(
+            {
+                'user_id': str(telegram_id),
+                'free_open_available': free_open_available,
+            }
+        )
 
 
 class CollectionView(APIView):
@@ -367,6 +399,7 @@ class CollectionView(APIView):
 
         base_price = settings_instance.open_price
         price = base_price
+        use_free_open_requested = _is_truthy(request.data.get('use_free_open'))
         profile_base = request.user.profile
         telegram_id = profile_base.telegram_id
 
@@ -392,8 +425,8 @@ class CollectionView(APIView):
 
         with transaction.atomic():
             profile = UserProfile.objects.select_for_update().get(user=request.user)
-            # Только первое открытие бесплатно. Далее используем цену из CardSettings.
-            price = 0 if profile.cards_opened == 0 else base_price
+            used_free_open = use_free_open_requested and not profile.free_open_used
+            price = 0 if used_free_open else base_price
 
             if price > 0:
                 if not telegram_id:
@@ -469,6 +502,8 @@ class CollectionView(APIView):
                 reward_amount = sum(row_rewards_map.get(row_index, 0) for row_index in completed_rows)
 
             profile.cards_opened = models.F('cards_opened') + 1
+            if used_free_open:
+                profile.free_open_used = True
             if external_balance is not None:
                 profile.stars_balance = external_balance
                 profile.stars_withdrawable = external_balance
@@ -477,6 +512,8 @@ class CollectionView(APIView):
                 profile.stars_balance = models.F('stars_balance') - price
                 profile.stars_withdrawable = models.F('stars_balance') - price
                 update_fields = ['cards_opened', 'stars_balance', 'stars_withdrawable']
+            if used_free_open:
+                update_fields.append('free_open_used')
             if external_balance is not None:
                 profile.telegram_stars_balance = external_balance
                 update_fields.append('telegram_stars_balance')
@@ -500,6 +537,7 @@ class CollectionView(APIView):
                 'group': selected_group.name,
                 'price': price,
                 'reward_earned': reward_amount,
+                'used_free_open': used_free_open,
             }
         )
 

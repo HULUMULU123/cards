@@ -15,6 +15,7 @@ export interface UserProfile {
   cards_opened: number
   cards_total: number
   card_open_price?: number
+  free_open_available?: boolean
   referral_code: string
   referral_link?: string
   cards_groups?: { template__group__name: string; count: number }[]
@@ -81,4 +82,12 @@ export interface InvoiceResponse {
 export interface TelegramAuthResponse {
   access: string
   profile: UserProfile
+}
+
+export interface OpenCardResponse {
+  card: Card
+  group?: string
+  price?: number
+  reward_earned?: number
+  used_free_open?: boolean
 }

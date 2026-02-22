@@ -196,6 +196,7 @@ export default function GiftCardsScreen() {
   const [openedCard, setOpenedCard] = useState<Card | null>(null)
   const [opening, setOpening] = useState(false)
   const [showPriceHint, setShowPriceHint] = useState(false)
+  const [freeOpenNotice, setFreeOpenNotice] = useState<string | null>(null)
   const hintTimeoutRef = useRef<number | null>(null)
   const autoOpenAttemptedRef = useRef(false)
 
@@ -238,9 +239,41 @@ export default function GiftCardsScreen() {
     setError(null)
     setOpening(true)
     try {
-      const card = await openCardFromGroup()
-      if (card) {
-        setOpenedCard(card)
+      const result = await openCardFromGroup()
+      if (result?.card) {
+        setOpenedCard(result.card)
+        if (result.used_free_open) {
+          setFreeOpenNotice('Вы использовали бесплатное открытие.')
+        }
+      }
+    } catch (openError) {
+      const message = openError instanceof Error ? openError.message : 'Не удалось открыть карточку'
+      setError(message)
+      const normalized = message.toLowerCase()
+      const shouldShowPrice =
+        price > 0 &&
+        (normalized.includes('недостаточно') ||
+          normalized.includes('telegram') ||
+          normalized.includes('телеграм'))
+      if (shouldShowPrice) {
+        setShowPriceHint(true)
+      }
+    } finally {
+      setOpening(false)
+    }
+  }
+
+  const openCardWithFreeFlag = async () => {
+    if (opening) return
+    setError(null)
+    setOpening(true)
+    try {
+      const result = await openCardFromGroup({ useFreeOpen: true })
+      if (result?.card) {
+        setOpenedCard(result.card)
+        if (result.used_free_open) {
+          setFreeOpenNotice('Вы использовали бесплатное открытие.')
+        }
       }
     } catch (openError) {
       const message = openError instanceof Error ? openError.message : 'Не удалось открыть карточку'
@@ -264,9 +297,14 @@ export default function GiftCardsScreen() {
     if (!profile) return
     if (opening) return
     if (getTelegramStartParam() !== 'open_pack') return
+    if (typeof profile.free_open_available !== 'boolean') return
 
     autoOpenAttemptedRef.current = true
     clearTelegramStartParamFromUrl()
+    if (profile.free_open_available) {
+      void openCardWithFreeFlag()
+      return
+    }
     void handleOpenCard()
   }, [profile, opening])
 
@@ -277,6 +315,7 @@ export default function GiftCardsScreen() {
         <BalancePill value={tgBalance}  />
       </Header>
 
+      {freeOpenNotice && <CardSubtitle style={{ color: '#baf7c4' }}>{freeOpenNotice}</CardSubtitle>}
       {error && <CardSubtitle style={{ color: '#ffbcbc' }}>{error}</CardSubtitle>}
 
       

@@ -31,6 +31,10 @@ REFERRAL_API_BASE_URL = os.getenv(
 )
 REFERRAL_API_KEY = os.getenv("REFERRAL_API_KEY", os.getenv("BALANCE_API_KEY", "super_secret_key"))
 DEFAULT_REFERRAL_REWARD = int(os.getenv("DEFAULT_REFERRAL_REWARD", "10"))
+FREE_OPEN_STATUS_API_BASE_URL = os.getenv(
+    "FREE_OPEN_STATUS_API_BASE_URL",
+    "https://giftcardstg.ru/api/internal/free-open/user/",
+)
 
 
 def _http_get_json_or_text(url: str) -> Any | None:
@@ -123,6 +127,25 @@ async def fetch_referral_data(user_id: int) -> dict[str, Any] | None:
     return await asyncio.to_thread(_fetch_referral_data_sync, user_id)
 
 
+def _fetch_free_open_status_sync(user_id: int) -> bool | None:
+    if not FREE_OPEN_STATUS_API_BASE_URL or not user_id:
+        return None
+    base = FREE_OPEN_STATUS_API_BASE_URL.rstrip("/")
+    payload = _http_get_json_or_text(f"{base}/{user_id}/")
+    if not isinstance(payload, dict):
+        return None
+    value = payload.get("free_open_available")
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return None
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+async def fetch_free_open_status(user_id: int) -> bool | None:
+    return await asyncio.to_thread(_fetch_free_open_status_sync, user_id)
+
+
 def build_start_message(user_id: int, referral_data: dict[str, Any] | None) -> str:
     reward_amount: float | int = DEFAULT_REFERRAL_REWARD
     reward_currency = "stars"
@@ -160,7 +183,13 @@ def build_start_message(user_id: int, referral_data: dict[str, Any] | None) -> s
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     user_id = user.id if user else 0
-    referral_data = await fetch_referral_data(user_id) if user_id else None
+    referral_data = None
+    free_open_available = None
+    if user_id:
+        referral_data, free_open_available = await asyncio.gather(
+            fetch_referral_data(user_id),
+            fetch_free_open_status(user_id),
+        )
 
     keyboard = [
         [
@@ -170,8 +199,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             )
         ],
         [InlineKeyboardButton("Поддержка (@AlekseyfrolovDm)", url=SUPPORT_URL)],
-        [InlineKeyboardButton("Бесплатное открытие!", url=FREE_OPEN_URL)],
     ]
+    if free_open_available is not False:
+        keyboard.append([InlineKeyboardButton("Бесплатное открытие!", url=FREE_OPEN_URL)])
     await update.message.reply_text(
         START_MESSAGE,
         reply_markup=InlineKeyboardMarkup(keyboard),
