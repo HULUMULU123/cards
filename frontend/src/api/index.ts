@@ -3,7 +3,6 @@ import {
   Card,
   CollectionResponse,
   InvoiceResponse,
-  OpenCardResponse,
   TelegramAuthResponse,
   UserProfile,
   WithdrawHistoryItem,
@@ -26,8 +25,7 @@ export const fetchProfile = (token?: string | null) => apiClient.get<UserProfile
 export const fetchCollection = (token?: string | null) =>
   apiClient.get<CollectionResponse>('/collection/', token)
 
-export const openCard = (token?: string | null, payload?: { use_free_open?: boolean }) =>
-  apiClient.post<OpenCardResponse>('/collection/', payload ?? {}, token)
+export const openCard = (token?: string | null) => apiClient.post<{ card: Card }>('/collection/', {}, token)
 
 export const fetchWithdrawHistory = (token?: string | null) =>
   apiClient.get<WithdrawHistoryResponse>('/withdraw/', token)
