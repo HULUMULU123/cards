@@ -33,6 +33,7 @@ class UserProfile(models.Model):
     )
     referrals_count = models.PositiveIntegerField(default=0, verbose_name='Рефералы')
     cards_opened = models.PositiveIntegerField(default=0, verbose_name='Открыто карточек')
+    free_open_used = models.BooleanField(default=False, verbose_name='Бесплатное открытие использовано')
 
     class Meta:
         verbose_name = 'Профиль пользователя'

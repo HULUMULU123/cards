@@ -15,6 +15,7 @@ import {
   Card,
   CollectionGroup,
   InvoiceResponse,
+  OpenCardResponse,
   UserProfile,
   WithdrawHistoryItem,
   WithdrawRequest,
@@ -72,7 +73,7 @@ interface AuthActions {
   fetchWithdrawHistory: () => Promise<void>
   submitWithdraw: (payload: WithdrawRequest) => Promise<WithdrawHistoryItem>
   openStarsInvoice: (amount: number) => Promise<InvoiceResponse>
-  openCardFromGroup: () => Promise<Card | null>
+  openCardFromGroup: (options?: { useFreeOpen?: boolean }) => Promise<OpenCardResponse | null>
 }
 
 const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
@@ -239,11 +240,11 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     }
   },
 
-  openCardFromGroup: async () => {
+  openCardFromGroup: async (options) => {
     const { token } = get()
     if (!token) return null
     try {
-      const result = await openCardApi(token)
+      const result = await openCardApi(token, options?.useFreeOpen ? { use_free_open: true } : undefined)
       if (result?.card) {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['collection', token] }),
@@ -251,7 +252,7 @@ const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         ])
         await get().fetchCollection()
         await get().fetchProfile()
-        return result.card
+        return result
       }
       return null
     } catch (error) {
